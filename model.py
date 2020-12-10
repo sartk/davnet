@@ -142,7 +142,7 @@ class UpTransition(nn.Module):
         self.relu2 = ELUCons(elu, out_channels)
         if dropout:
             self.do1 = nn.Dropout2d()
-        self.ops = _make_nConv(out_channels, num_convs, elu)
+        self.ops = _make_nConv(out_channels * 2, num_convs, elu)
 
     def forward(self, x, skipx):
         out = self.do1(x)
