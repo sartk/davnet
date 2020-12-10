@@ -105,7 +105,7 @@ class InputTransition(nn.Module):
         # do we want a PRELU here as well?
         out = self.bn1(self.conv1(x))
         # split input in to 16 channels
-        x_rep = torch.cat([x] * self.out_channels, 0)
+        x_rep = torch.cat([x] * self.out_channels, 1)
         out = self.relu1(torch.add(out, x_rep))
         return out
 
