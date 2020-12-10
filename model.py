@@ -162,9 +162,9 @@ class OutputTransition(nn.Module):
         self.conv2 = nn.Conv2d(n, n, kernel_size=1)
         self.relu1 = ELUCons(elu, n)
         if nll:
-            self.softmax = nn.LogSoftmax2d(dim=1)
+            self.softmax = nn.LogSoftmax2d()
         else:
-            self.softmax = nn.Softmax2d(dim=1)
+            self.softmax = nn.Softmax2d()
 
     def forward(self, x):
         # convolve 32 down to SELF.NUM_CLASSES channels
