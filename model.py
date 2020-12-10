@@ -24,7 +24,7 @@ class DAVNet2D(nn.Module):
             return seg
         features = torch.flatten(out256)
         domain = self.discriminator(GradReversal.apply(features, lamb))
-        return seg, domain
+        return seg, domain, features
 
 def DomainClassifier():
     c = nn.Sequential()
@@ -219,7 +219,7 @@ class VNetUp(nn.Module):
         self.up_tr32 = UpTransition(64, 32, 1, pad_up(182, 364, 2, 2), elu)
         self.out_tr = OutputTransition(32, 2, elu, nll)
 
-    def forward(out16, out32, out64, out128, out256):
+    def forward(self, out16, out32, out64, out128, out256):
         out = self.up_tr256(out256, out128)
         out = self.up_tr128(out, out64)
         out = self.up_tr64(out, out32)
