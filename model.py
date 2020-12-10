@@ -129,7 +129,7 @@ class UpTransition(nn.Module):
     def __init__(self, in_channels, out_channels, num_convs, elu, padding, dropout=False):
         super(UpTransition, self).__init__()
         out_channels //= 2 #because of the concat with feature forwarding
-        self.up_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, padding=padding stride=2)
+        self.up_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, padding=padding, stride=2)
         self.bn1 = ContBatchNorm2d(out_channels)
         self.do1 = passthrough
         self.do2 = nn.Dropout2d()
