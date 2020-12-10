@@ -111,7 +111,7 @@ class InputTransition(nn.Module):
 
 
 class DownTransition(nn.Module):
-    def __init__(self, in_channels, out_channels, num_convs, padding=0, elu, dropout=False):
+    def __init__(self, in_channels, out_channels, num_convs, padding, elu, dropout=False):
         super(DownTransition, self).__init__()
         self.down_conv = nn.Conv2d(in_channels, out_channels, kernel_size=2, stride=2, padding=padding)
         self.bn1 = nn.BatchNorm2d(out_channels)
