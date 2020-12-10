@@ -6,6 +6,7 @@ from torch.autograd import Function
 def toy_fwd(n=1):
     x = torch.rand(n, 1, 364, 364)
     model = DAVNet2D()
+    return x, model
 
 class DAVNet2D(nn.Module):
 
@@ -110,7 +111,7 @@ class InputTransition(nn.Module):
 
 
 class DownTransition(nn.Module):
-    def __init__(self, in_channels, out_channels, num_convs, elu, padding=0, dropout=False):
+    def __init__(self, in_channels, out_channels, num_convs, padding=0, elu, dropout=False):
         super(DownTransition, self).__init__()
         self.down_conv = nn.Conv2d(in_channels, out_channels, kernel_size=2, stride=2, padding=padding)
         self.bn1 = nn.BatchNorm2d(out_channels)
@@ -130,7 +131,7 @@ class DownTransition(nn.Module):
 
 
 class UpTransition(nn.Module):
-    def __init__(self, in_channels, out_channels, num_convs, elu, padding, dropout=False):
+    def __init__(self, in_channels, out_channels, num_convs, padding, elu, dropout=False):
         super(UpTransition, self).__init__()
         out_channels //= 2 #because of the concat with feature forwarding
         self.up_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, padding=padding, stride=2)
