@@ -162,9 +162,9 @@ class OutputTransition(nn.Module):
         self.conv2 = nn.Conv2d(n, n, kernel_size=1)
         self.relu1 = ELUCons(elu, n)
         if nll:
-            self.softmax = nn.LogSoftmax(dim=1)
+            self.softmax = nn.LogSoftmax2d(dim=1)
         else:
-            self.softmax = nn.Softmax(dim=1)
+            self.softmax = nn.Softmax2d(dim=1)
 
     def forward(self, x):
         # convolve 32 down to SELF.NUM_CLASSES channels
@@ -172,9 +172,9 @@ class OutputTransition(nn.Module):
         out = self.conv2(out)
 
         # make channels the last axis
-        out = out.permute(0, 2, 3, 1).contiguous()
+        #out = out.permute(0, 2, 3, 1).contiguous()
         # flatten
-        out = out.view(out.numel() // self.num_classes, self.num_classes)
+        #out = out.view(out.numel() // self.num_classes, self.num_classes)
 
         return self.softmax(out)
 
