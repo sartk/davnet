@@ -23,7 +23,7 @@ class DAVNet2D(nn.Module):
         seg = self.segmentation(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        features = torch.flatten(out256)
+        features = torch.flatten(out256, start_dim=1)
         domain = self.discriminator(GradReversal.apply(features, lamb))
         return seg, domain, features
 
@@ -152,7 +152,6 @@ class UpTransition(nn.Module):
         out = self.ops(xcat)
         out = self.relu2(torch.add(out, xcat))
         return out
-
 
 class OutputTransition(nn.Module):
     def __init__(self, in_channels, n, elu, nll):
