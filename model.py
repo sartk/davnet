@@ -97,7 +97,7 @@ class InputTransition(nn.Module):
         super(InputTransition, self).__init__()
         self.out_channels = out_channels
         self.conv1 = nn.Conv2d(1, out_channels, kernel_size=5, padding=2)
-        self.bn1 = nn.BatchNorm2dout_channels)
+        self.bn1 = nnnn.BatchNorm2d(out_channels)
         self.relu1 = ELUCons(elu, out_channels)
 
     def forward(self, x):
@@ -113,7 +113,7 @@ class DownTransition(nn.Module):
     def __init__(self, in_channels, out_channels, num_convs, elu, padding=0, dropout=False):
         super(DownTransition, self).__init__()
         self.down_conv = nn.Conv2d(in_channels, out_channels, kernel_size=2, stride=2, padding=padding)
-        self.bn1 = nn.BatchNorm2dout_channels)
+        self.bn1 = nnnn.BatchNorm2d(out_channels)
         self.do1 = passthrough
         self.relu1 = ELUCons(elu, out_channels)
         self.relu2 = ELUCons(elu, out_channels)
@@ -134,7 +134,7 @@ class UpTransition(nn.Module):
         super(UpTransition, self).__init__()
         out_channels //= 2 #because of the concat with feature forwarding
         self.up_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, padding=padding, stride=2)
-        self.bn1 = nn.BatchNorm2dout_channels)
+        self.bn1 = nnnn.BatchNorm2d(out_channels)
         self.do1 = passthrough
         self.do2 = nn.Dropout2d()
         self.relu1 = ELUCons(elu, out_channels)
@@ -158,7 +158,7 @@ class OutputTransition(nn.Module):
         super(OutputTransition, self).__init__()
         self.num_classes = n
         self.conv1 = nn.Conv2d(in_channels, n, kernel_size=2, padding=2)
-        self.bn1 = nn.BatchNorm2dn)
+        self.bn1 = nn.BatchNorm2d(n)
         self.conv2 = nn.Conv2d(n, n, kernel_size=1)
         self.relu1 = ELUCons(elu, n)
         if nll:
