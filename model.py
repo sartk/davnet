@@ -34,9 +34,9 @@ def DomainClassifier():
     c.add_module('d_relu1', nn.ReLU(True))
     c.add_module('d_fc2', nn.Linear(2048, 2048))
     c.add_module('d_bn2', nn.BatchNorm1d(2048))
-    c.add_module('d_relu2', nn.ReLU(True))
+    c.add_module('d_rel2u2', nn.ReLU(True))
     c.add_module('d_fc3', nn.Linear(2048, 2))
-    c.add_module('d_softmax', nn.LogSoftmax(dim=1))
+    c.add_module('d_softmax', nn.Softmax(dim=1))
     return c
 
 def passthrough(x, **kwargs):
