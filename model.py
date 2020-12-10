@@ -13,7 +13,7 @@ class DAVNet2D(nn.Module):
     def __init__(self):
         nn.Module.__init__(self)
         self.extract_features = VNetDown()
-        self.segmentation = VNetUp()
+        self.segmentation = VNetUp(5)
         self.discriminator = DomainClassifier()
         # idea: 2 fully connected with 2048 neurons each
         # or an inception model as a part of the discriminator
@@ -162,9 +162,9 @@ class OutputTransition(nn.Module):
         self.conv2 = nn.Conv2d(n, n, kernel_size=1)
         self.relu1 = ELUCons(elu, n)
         if nll:
-            self.softmax = F.log_softmax
+            self.softmax = nn.LogSoftmax(dim=1)
         else:
-            self.softmax = F.softmax
+            self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
         # convolve 32 down to SELF.NUM_CLASSES channels
@@ -211,13 +211,13 @@ class VNetDown(nn.Module):
         return out16, out32, out64, out128, out256
 
 class VNetUp(nn.Module):
-    def __init__(self, elu=True, nll=False):
+    def __init__(self, num_channels=2, elu=True, nll=False):
         super(VNetUp, self).__init__()
         self.up_tr256 = UpTransition(256, 256, 2, pad_up(24, 48, 2, 2), elu, dropout=True)
         self.up_tr128 = UpTransition(256, 128, 2, pad_up(48, 96, 2, 2), elu, dropout=True)
         self.up_tr64 = UpTransition(128, 64, 1, pad_up(96, 182, 2, 2), elu)
         self.up_tr32 = UpTransition(64, 32, 1, pad_up(182, 364, 2, 2), elu)
-        self.out_tr = OutputTransition(32, 2, elu, nll)
+        self.out_tr = OutputTransition(32, num_channels, elu, nll)
 
     def forward(self, out16, out32, out64, out128, out256):
         out = self.up_tr256(out256, out128)
