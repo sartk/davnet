@@ -78,7 +78,7 @@ class LUConv(nn.Module):
         super(LUConv, self).__init__()
         self.relu1 = ELUCons(elu, num_channels)
         self.conv1 = nn.Conv2d(num_channels, num_channels, kernel_size=5, padding=2)
-        self.bn1 = nn.BatchNorm2dnum_channels)
+        self.bn1 = nn.BatchNorm2d(num_channels)
 
     def forward(self, x):
         out = self.relu1(self.bn1(self.conv1(x)))
