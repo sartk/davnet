@@ -157,7 +157,7 @@ class OutputTransition(nn.Module):
     def __init__(self, in_channels, n, elu, nll):
         super(OutputTransition, self).__init__()
         self.num_classes = n
-        self.conv1 = nn.Conv2d(in_channels, n, kernel_size=2, padding=2)
+        self.conv1 = nn.Conv2d(in_channels, n, kernel_size=5, padding=2)
         self.bn1 = nn.BatchNorm2d(n)
         self.conv2 = nn.Conv2d(n, n, kernel_size=1)
         self.relu1 = ELUCons(elu, n)
@@ -220,7 +220,7 @@ class VNetUp(nn.Module):
         self.out_tr = OutputTransition(32, num_channels, elu, nll)
 
     def forward(self, out16, out32, out64, out128, out256):
-        out = self.up_tr256(out256, out128)
+        out = self.up_tr256(out256,out128)
         out = self.up_tr128(out, out64)
         out = self.up_tr64(out, out32)
         out = self.up_tr32(out, out16)
