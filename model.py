@@ -10,10 +10,10 @@ def toy_fwd(n=1):
 
 class DAVNet2D(nn.Module):
 
-    def __init__(self):
+    def __init__(self, classes=5):
         nn.Module.__init__(self)
         self.extract_features = VNetDown()
-        self.segmentation = VNetUp(5)
+        self.segmentation = VNetUp(classes)
         self.discriminator = DomainClassifier()
         # idea: 2 fully connected with 2048 neurons each
         # or an inception model as a part of the discriminator
