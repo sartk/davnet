@@ -12,24 +12,48 @@ class DAVNet2D(nn.Module):
 
     def __init__(self, classes=5):
         nn.Module.__init__(self)
-        self.extract_features = VNetDown()
-        self.segmentation = VNetUp(classes)
-        self.discriminator = DomainClassifier()
-        # idea: 2 fully connected with 2048 neurons each
-        # or an inception model as a part of the discriminator
+        self.feat = VNetDown()
+        self.seg = VNetUp(classes)
+        self.disc = DomainClassifier()
 
     def forward(self, x, lamb, seg_only):
-        out16, out32, out64, out128, out256 = self.extract_features(x)
-        seg = self.segmentation(out16, out32, out64, out128, out256)
+        out16, out32, out64, out128, out256 = self.feat(x)
+        seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        features = torch.flatten(out256, start_dim=1)
-        domain = self.discriminator(GradReversal.apply(features, lamb))
-        return seg, domain, features
+        domain = self.disc(GradReversal.apply(out256, lamb))
+        return seg, domain
 
+def sequential(x, funcs):
+    for f in funcs:
+        x = f(x)
+    return x
+
+class DomainClassifier(nn.Module):
+    def __init__(self):
+        super(DomainClassifier, self).__init__()
+        self.pool = nn.AvgPool2d(out256, kernel_size=364, stride=1)
+        self.fc1 = nn.Linear(256, 2048)
+        self.bn1 = nn.BatchNorm1d(2048)
+        self.relu1 = nn.ReLU(True)
+        self.fc2 = nn.Linear(2048, 2048)
+        self.bn2 = nn.BatchNorm1d(2048)
+        self.relu2 = nn.ReLU(True)
+        self.fc3 = nn.Linear(2048, 2)
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        out = self.pool(x)
+        out = out.view(out.size(0), -1)
+        out = self.relu1(self.bn1(self.fc1(out)))
+        out = self.relu2(self.bn2(self.fc2(out)))
+        out = self.softmax(self.fc3(out))
+        return out
+
+"""
 def DomainClassifier():
     c = nn.Sequential()
-    c.add_module('d_fc1', nn.Linear(256 * 24 * 24, 2048))
+    c.add_module('d_fc1', nn.Linear(256, 2048))
     c.add_module('d_bn1', nn.BatchNorm1d(2048))
     c.add_module('d_relu1', nn.ReLU(True))
     c.add_module('d_fc2', nn.Linear(2048, 2048))
@@ -38,6 +62,7 @@ def DomainClassifier():
     c.add_module('d_fc3', nn.Linear(2048, 2))
     c.add_module('d_softmax', nn.Softmax(dim=1))
     return c
+"""
 
 def passthrough(x, **kwargs):
     return x
