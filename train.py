@@ -13,6 +13,10 @@ from torch.utils.tensorboard import SummaryWriter
 
 from evaluate import evaluate
 
+balanced_train = MRISegmentations('train', balanced=True)
+unbalanced_train = MRISegmentations('train', balanced=False)
+balanced_val = MRISegmentations('valid', balanced=True)
+unbalanced_valid = MRISegmentations('valid', balanced=False)
 
 def train(model, dataloaders, args):
     """ Trains a given model and dataset.
