@@ -3,20 +3,17 @@ import time
 import logging
 import numpy as np
 from tqdm import tqdm
-
+from dataset import *
+from model import *
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.optim.lr_scheduler as lr_scheduler
 import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
-
 from evaluate import evaluate
 
-balanced_train = MRISegmentations('train', balanced=True)
-unbalanced_train = MRISegmentations('train', balanced=False)
-balanced_val = MRISegmentations('valid', balanced=True)
-unbalanced_valid = MRISegmentations('valid', balanced=False)
+
 
 def train(model, dataloaders, args):
     """ Trains a given model and dataset.

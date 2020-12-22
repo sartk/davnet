@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from torch.autograd import Function
 
 def toy_fwd(n=1):
-    x = torch.rand(n, 1, 364, 364)
+    x = torch.rand(n, 1, 344, 344)
     model = DAVNet2D()
     return x, model
 
@@ -222,9 +222,9 @@ class VNetDown(nn.Module):
     def __init__(self, elu=True, nll=False):
         super(VNetDown, self).__init__()
         self.in_tr = InputTransition(16, elu)
-        self.down_tr32 = DownTransition(16, 32, 1, pad_down(364, 182, 2, 2), elu)
-        self.down_tr64 = DownTransition(32, 64, 2, pad_down(182, 96, 2, 2), elu)
-        self.down_tr128 = DownTransition(64, 128, 3, pad_down(96, 48, 2, 2), elu, dropout=True)
+        self.down_tr32 = DownTransition(16, 32, 1, pad_down(344, 172, 2, 2), elu)
+        self.down_tr64 = DownTransition(32, 64, 2, pad_down(172, 86, 2, 2), elu)
+        self.down_tr128 = DownTransition(64, 128, 3, pad_down(86, 48, 2, 2), elu, dropout=True)
         self.down_tr256 = DownTransition(128, 256, 2, pad_down(48, 24, 2, 2), elu, dropout=True)
 
     def forward(self, x):
@@ -239,9 +239,9 @@ class VNetUp(nn.Module):
     def __init__(self, num_channels=2, elu=True, nll=False):
         super(VNetUp, self).__init__()
         self.up_tr256 = UpTransition(256, 256, 2, pad_up(24, 48, 2, 2), elu, dropout=True)
-        self.up_tr128 = UpTransition(256, 128, 2, pad_up(48, 96, 2, 2), elu, dropout=True)
-        self.up_tr64 = UpTransition(128, 64, 1, pad_up(96, 182, 2, 2), elu)
-        self.up_tr32 = UpTransition(64, 32, 1, pad_up(182, 364, 2, 2), elu)
+        self.up_tr128 = UpTransition(256, 128, 2, pad_up(48, 86, 2, 2), elu, dropout=True)
+        self.up_tr64 = UpTransition(128, 64, 1, pad_up(86, 172, 2, 2), elu)
+        self.up_tr32 = UpTransition(64, 32, 1, pad_up(172, 344, 2, 2), elu)
         self.out_tr = OutputTransition(32, num_channels, elu, nll)
 
     def forward(self, out16, out32, out64, out128, out256):
