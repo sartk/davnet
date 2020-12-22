@@ -99,13 +99,13 @@ class MRISegmentations(Dataset):
             idx = idx.tolist()
         x = self.data[idx]
         if '.mat' in x[1]:
-            img, seg = torch.from_numpy(load_oai(x))
+            img, seg = load_oai(x)
             domain = 0
         else:
-            img, seg = torch.from_numpy(load_ucsf(x))
+            img, seg = load_ucsf(x)
             domain = 1
 
-        sample = {'img': img, 'seg': seg, 'domain': domain}
+        sample = {'img': torch.from_numpy(img), 'seg': torch.from_numpy(seg), 'domain': domain}
         return sample
 
 balanced_train = MRISegmentations('train', balanced=True)
