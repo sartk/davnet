@@ -32,7 +32,7 @@ def sequential(x, funcs):
 class DomainClassifier(nn.Module):
     def __init__(self):
         super(DomainClassifier, self).__init__()
-        self.pool = nn.AvgPool2d(kernel_size=256, stride=1)
+        self.pool = nn.AvgPool2d(kernel_size=24, stride=1)
         self.fc1 = nn.Linear(256, 2048)
         self.bn1 = nn.BatchNorm1d(2048)
         self.relu1 = nn.ReLU(True)
