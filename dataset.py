@@ -79,7 +79,7 @@ def load_ucsf(x='',nclasses = 6):
     # [[plt.imshow(seg[...,cl]),plt.show()] for cl in range(6)]
     return mri, seg
 
-class MRISegmentations(Dataset):
+class kMRI(Dataset):
 
     def __init__(self, src, balanced=True, pickle_name=None):
         assert src in ['train', 'test', 'valid'], "src must be one of: 'train', 'test', 'valid'"
@@ -108,7 +108,7 @@ class MRISegmentations(Dataset):
         sample = {'img': torch.from_numpy(img), 'seg': torch.from_numpy(seg), 'domain': domain}
         return sample
 
-balanced_train = MRISegmentations('train', balanced=True)
-unbalanced_train = MRISegmentations('train', balanced=False)
-balanced_val = MRISegmentations('valid', balanced=True)
-unbalanced_valid = MRISegmentations('valid', balanced=False)
+balanced_train = kMRI('train', balanced=True)
+unbalanced_train = kMRI('train', balanced=False)
+balanced_val = kMRI('valid', balanced=True)
+unbalanced_valid = kMRI('valid', balanced=False)
