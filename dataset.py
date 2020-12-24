@@ -7,6 +7,48 @@ import matplotlib.pyplot as plot
 import torch
 from torch.utils.data import Dataset
 
+class kMRI(Dataset):
+
+    def __init__(self, src, balanced=True, pickle_name=None, group='all'):
+
+        assert src in ['train', 'test', 'valid'], "src must be one of: 'train', 'test', 'valid'"
+        assert group in ['all', 'source', 'target'], "group must be one of: 'all', 'source', 'target'"
+
+        if pickle_name is None:
+            if balanced:
+                pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_{}.pickle'
+            else:
+                pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_ALLfiles_{}.pickle'
+
+        if group == 'all':
+            h = lambda x: True
+        elif group == 'source':
+            h = lambda x: '.mat' in x[1]
+        elif group == 'target':
+            h = lambda x: '.mat' not in x[1]
+
+        self.data = list(filter(h, load_pickle(pickle_name.format(src))))
+        self.src = src
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        x = self.data[idx]
+        if '.mat' in x[1]:
+            img, seg = load_oai(x)
+            domain = torch.tensor([1, 0])
+        else:
+            img, seg = load_ucsf(x)
+            domain = torch.tensor([0, 1])
+        img = torch.from_numpy(img).permute(2, 0, 1).contiguous()
+        seg = torch.from_numpy(seg).permute(2, 0, 1).contiguous()
+
+        return img, seg, domain
+
+
 def load_pickle(path):
     return pickle.load(open(path,'rb'))
 def load_dicom(path):
@@ -78,44 +120,3 @@ def load_ucsf(x='',nclasses = 6):
     seg[:,:,0] = bkg.astype('uint8')
     # [[plt.imshow(seg[...,cl]),plt.show()] for cl in range(6)]
     return mri, seg
-
-class kMRI(Dataset):
-
-    def __init__(self, src, balanced=True, pickle_name=None, group='all'):
-
-        assert src in ['train', 'test', 'valid'], "src must be one of: 'train', 'test', 'valid'"
-        assert group in ['all', 'source', 'target'], "group must be one of: 'all', 'source', 'target'"
-
-        if pickle_name is None:
-            if balanced:
-                pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_{}.pickle'
-            else:
-                pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_ALLfiles_{}.pickle'
-
-        if group == 'all':
-            h = lambda x: True
-        elif group == 'source':
-            h = lambda x: '.mat' in x[1]
-        elif group == 'target':
-            h = lambda x: '.mat' not in x[1]
-
-        self.data = list(filter(h, load_pickle(pickle_name.format(src))))
-        self.src = src
-
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-        x = self.data[idx]
-        if '.mat' in x[1]:
-            img, seg = load_oai(x)
-            domain = torch.tensor([1, 0])
-        else:
-            img, seg = load_ucsf(x)
-            domain = torch.tensor([0, 1])
-        img = torch.from_numpy(img).permute(2, 0, 1).contiguous()
-        seg = torch.from_numpy(seg).permute(2, 0, 1).contiguous()
-
-        return img, seg, domain
