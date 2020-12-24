@@ -55,11 +55,12 @@ def train(**kwargs):
             for phase in tracker(iter(['train', 'valid']), desc='phase'):
 
                 model.train(phase == 'train')
-                dataloader = tracker(dataloaders[group][phase], desc='batch')
+                dataloader = dataloaders[group][phase]
+                len_dataloader = len(dataloader)
 
-                for i, (img, seg_label, domain_label) in enumerate(dataloader):
+                for i, (img, seg_label, domain_label) in tracker(enumerate(dataloader), desc='batch'):
 
-                    p = float(i + epoch * len_dataloader) / n_epoch / len_dataloader
+                    p = float(i + epoch * len_dataloader) / configs['num_epochs'] / len_dataloader
                     grad_reversal_coef = 2. / (1. + np.exp(-10 * p)) - 1
 
                     data_type = torch.HalfTensor if configs['half_precision'] else torch.FloatTensor
