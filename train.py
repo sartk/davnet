@@ -1,6 +1,5 @@
 import gc
 import time
-import logging
 import numpy as np
 from tqdm import tqdm
 from dataset import *
@@ -74,9 +73,9 @@ def train(**kwargs):
                     optimizer.zero_grad()
 
                     if group == 'balanced':
-                        seg_pred, domain_pred = model(img, lamb, seg_only=False)
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                     elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, lamb, seg_only=True), torch.tensor([1, 0])
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([1, 0])
 
                     seg_loss = F_seg_loss(seg_pred, seg_label)
                     domain_loss = F_domain_loss(domain_pred, domain_label)
@@ -103,3 +102,5 @@ def train(**kwargs):
                     'domain_loss': epoch_domain_loss,
                     'seg_loss': epoch_seg_loss
                     }, os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'))
+
+        gc.collect()
