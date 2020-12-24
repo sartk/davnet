@@ -10,7 +10,7 @@ def toy_fwd(n=1):
 
 class DAVNet2D(nn.Module):
 
-    def __init__(self, classes=5):
+    def __init__(self, classes=6):
         nn.Module.__init__(self)
         self.feat = VNetDown()
         self.seg = VNetUp(classes)

@@ -81,14 +81,25 @@ def load_ucsf(x='',nclasses = 6):
 
 class kMRI(Dataset):
 
-    def __init__(self, src, balanced=True, pickle_name=None):
+    def __init__(self, src, balanced=True, pickle_name=None, group='all'):
+
         assert src in ['train', 'test', 'valid'], "src must be one of: 'train', 'test', 'valid'"
+        assert group in ['all', 'source', 'target'], "group must be one of: 'all', 'source', 'target'"
+
         if pickle_name is None:
             if balanced:
                 pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_{}.pickle'
             else:
                 pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_ALLfiles_{}.pickle'
-        self.data = load_pickle(pickle_name.format(src))
+
+        if group == 'all':
+            h = lambda x: True
+        elif group == 'source':
+            h = lambda x: '.mat' in x[1]
+        elif group == 'target':
+            h = lambda x: '.mat' not in x[1]
+
+        self.data = list(filter(h, load_pickle(pickle_name.format(src))))
         self.src = src
 
     def __len__(self):
@@ -100,15 +111,11 @@ class kMRI(Dataset):
         x = self.data[idx]
         if '.mat' in x[1]:
             img, seg = load_oai(x)
-            domain = 0
+            domain = torch.tensor([1, 0])
         else:
             img, seg = load_ucsf(x)
-            domain = 1
+            domain = torch.tensor([0, 1])
+        img = torch.from_numpy(img).permute(2, 0, 1).contiguous()
+        seg = torch.from_numpy(seg).permute(2, 0, 1).contiguous()
 
-        sample = {'img': torch.from_numpy(img), 'seg': torch.from_numpy(seg), 'domain': domain}
-        return sample
-
-balanced_train = kMRI('train', balanced=True)
-unbalanced_train = kMRI('train', balanced=False)
-balanced_val = kMRI('valid', balanced=True)
-unbalanced_valid = kMRI('valid', balanced=False)
+        return img, seg, domain
