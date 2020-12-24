@@ -13,7 +13,7 @@ from evaluate import evaluate
 def train(**kwargs):
 
     configs = default_configs.copy()
-    configs.update(**kwargs)
+    configs.update(kwargs)
     tracker = tqdm if configs['print_progress'] else identity_tracker
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
