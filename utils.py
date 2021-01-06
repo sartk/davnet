@@ -19,7 +19,7 @@ default_configs = {
     'half_precision': False,
     'cuda': True,
     'num_epochs': 100,
-    'checkpoint_dir': '~/davnet/checkpts',
+    'checkpoint_dir': '~/davnet-checkpts',
     'groups': ['balanced', 'all_source'],
     'phases': ['train', 'valid'],
     'num_workers': 4,
