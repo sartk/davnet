@@ -112,7 +112,7 @@ def train(**kwargs):
                         err.backward()
                         optimizer.step()
 
-                    print(domain_pred.argmax(-1))
+                    print(domain_pred.argmax(-1) == domain_label)
 
                     running_domain_acc[phase] += (domain_pred.argmax(-1) == domain_label).sum().item()
                     sample_count += img.size(0)
