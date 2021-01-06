@@ -79,9 +79,8 @@ def train(**kwargs):
                 model.train(phase == 'train')
                 dataloader = dataloaders[group][phase]
                 len_dataloader = len(dataloader)
-
-                for i, (img, seg_label, domain_label) in tracker(enumerate(dataloader), desc='batch'):
-
+                i = 0
+                for img, seg_label, domain_label in tracker(dataloader, desc='batch'):
                     p = float(i + epoch * len_dataloader) / configs['num_epochs'] / len_dataloader
                     grad_reversal_coef = 2. / (1. + np.exp(-10 * p)) - 1
 
@@ -111,6 +110,7 @@ def train(**kwargs):
                     sample_count += img.size(0)
                     running_seg_loss[phase] += seg_loss.item() * img.size(0)
                     running_domain_loss[phase] += domain_loss.item() * img.size(0)
+                    i += 1
 
         for phase in configs['phases']:
             epoch_domain_loss = running_domain_loss[phase] / sample_count
