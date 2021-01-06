@@ -3,14 +3,16 @@ import torch
 import torch.nn as nn
 from model import DAVNet2D
 
-def dice_loss(Y_hat, Y):
+def batch_flatten(X):
+    return X.view(X.size(0), -1)
+
+def dice_loss(Y_hat, Y, smooth=1e-10):
     assert Y_hat.size() == Y.size()
-    Y, Y_hat = torch.flatten(Y, start_dim=1).double(), torch.flatten(Y_hat, start_dim=1).double()
-    b, L = Y.size(0), Y.size(1)
-    M1, M2 = lambda Y: Y.view(b, 1, L), lambda Y: Y.view(b, L, 1)
-    I = 2 * torch.bmm(M1(Y), M2(Y_hat))
-    U = torch.bmm(M1(Y), M2(Y)) + torch.bmm(M1(Y_hat), M2(Y_hat))
-    return (1 - I/U).float()
+    Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
+    intersection = (Y * Y_hat).sum(1)
+    union = Y.sum(1) + Y_hat.sum(1)
+    dice = (2 * intersection + smooth) / (union + smooth)
+    return 1 - dice
 
 default_configs = {
     'balanced_batch_size': 8,
