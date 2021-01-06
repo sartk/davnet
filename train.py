@@ -35,7 +35,9 @@ def train(**kwargs):
     data_type = torch.HalfTensor if configs['half_precision'] else torch.FloatTensor
 
     if configs['half_precision']:
-        model.type(data_type)
+        model = model.half()
+    else:
+        model = model.float()
 
     if configs['cuda']:
         model = model.cuda()
@@ -84,12 +86,16 @@ def train(**kwargs):
                     p = float(i + epoch * len_dataloader) / configs['num_epochs'] / len_dataloader
                     grad_reversal_coef = 2. / (1. + np.exp(-10 * p)) - 1
 
-                    img = img.type(data_type)
-
                     if configs['cuda']:
                         img = img.cuda(non_blocking=True)
                         seg_label = seg_label.cuda(non_blocking=True)
                         domain_label = domain_label.cuda(non_blocking=True)
+
+                    if configs['half_precision']:
+                        img = img.half()
+                        seg_label = seg_label.half()
+                        domain_label = domain_label.half()
+
 
                     optimizer.zero_grad()
 
