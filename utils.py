@@ -7,10 +7,10 @@ def dice_loss(Y_hat, Y):
     assert Y_hat.size() == Y.size()
     Y, Y_hat = torch.flatten(Y, start_dim=1), torch.flatten(Y_hat, start_dim=1)
     b, L = Y.size(0), Y.size(1)
-    M1, M2 = Y.view(b, 1, L), Y_hat.view(b, L, 1)
+    M1, M2 = Y.view(b, 1, L).double(), Y_hat.view(b, L, 1).double()
     I = 2 * torch.bmm(M1, M2)
     U = torch.bmm(M1, M1) + torch.bmm(M2, M2)
-    return I/U
+    return (I/U).float()
 
 default_configs = {
     'balanced_batch_size': 8,
