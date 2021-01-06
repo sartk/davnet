@@ -134,17 +134,18 @@ def train(**kwargs):
             patience_counter = 0
             best_valid_loss['domain'] = epoch_domain_loss['valid']
             epoch_seg_loss['valid'] = best_valid_loss['seg']
-            torch.save({
-                        'epoch': epoch,
-                        'phase': phase,
-                        'groups': groups,
-                        'domain_loss': epoch_domain_loss,
-                        'domain_acc': epoch_domain_acc,
-                        'seg_loss': epoch_seg_loss,
-                        'configs': configs,
-                        'model_state_dict': model.state_dict(),
-                        'optimizer_state_dict': optimizer.state_dict(),
-                        }, os.path.join(configs['checkpoint_dir'], f'{timestamp}-{phase}-{epoch}.pt'))
+            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{phase}-{epoch}.pt'), 'wb+'):
+                torch.save({
+                            'epoch': epoch,
+                            'phase': phase,
+                            'groups': groups,
+                            'domain_loss': epoch_domain_loss,
+                            'domain_acc': epoch_domain_acc,
+                            'seg_loss': epoch_seg_loss,
+                            'configs': configs,
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict(),
+                            }, f)
         else:
             patience_counter += 1
             if patience_counter < patience:
