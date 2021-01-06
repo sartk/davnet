@@ -10,7 +10,7 @@ def dice_loss(Y_hat, Y):
     M1, M2 = lambda Y: Y.view(b, 1, L), lambda Y: Y.view(b, L, 1)
     I = 2 * torch.bmm(M1(Y), M2(Y_hat))
     U = torch.bmm(M1(Y), M2(Y)) + torch.bmm(M1(Y_hat), M2(Y_hat))
-    return (I/U).float()
+    return (1 - I/U).float()
 
 default_configs = {
     'balanced_batch_size': 8,

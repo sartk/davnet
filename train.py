@@ -106,7 +106,7 @@ def train(**kwargs):
 
                     seg_loss = F_seg_loss(seg_pred, seg_label)
                     domain_loss = F_domain_loss(domain_pred, domain_label)
-                    err = seg_loss + domain_loss
+                    err = (seg_loss + domain_loss).sum()
 
                     if phase == 'train':
                         err.backward()
