@@ -32,6 +32,7 @@ def train(**kwargs):
     }
 
     model = models[configs['model']](classes=configs['classes'])
+    data_type = torch.HalfTensor if configs['half_precision'] else torch.FloatTensor
 
     if configs['half_precision']:
         model.type(data_type)
@@ -84,7 +85,6 @@ def train(**kwargs):
                     p = float(i + epoch * len_dataloader) / configs['num_epochs'] / len_dataloader
                     grad_reversal_coef = 2. / (1. + np.exp(-10 * p)) - 1
 
-                    data_type = torch.HalfTensor if configs['half_precision'] else torch.FloatTensor
                     img = img.type(data_type)
 
                     if configs['cuda']:
