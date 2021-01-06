@@ -4,30 +4,30 @@ import torch.nn as nn
 from model import DAVNet2D
 import numpy as np
 
-def dice_loss(Y_hat, Y):
+def dice_loss(result, target):
     eps = 0.000001
-    _, result_ = Y_hat.max(1)
+    _, result_ = input.max(1)
     result_ = torch.squeeze(result_)
-    if Y_hat.is_cuda:
+    if input.is_cuda:
         result = torch.cuda.FloatTensor(result_.size())
-        Y_ = torch.cuda.FloatTensor(Y.size())
+        target_ = torch.cuda.FloatTensor(target.size())
     else:
         result = torch.FloatTensor(result_.size())
-        Y_ = torch.FloatTensor(Y.size())
+        target_ = torch.FloatTensor(target.size())
     result.copy_(result_.data)
-    Y_.copy_(Y.data)
-    Y = Y_
-    intersect = torch.dot(result, Y)
+    target_.copy_(target.data)
+    target = target_
+    intersect = torch.dot(result, target)
 
     result_sum = torch.sum(result)
-    Y_sum = torch.sum(Y)
-    union = result_sum + Y_sum + 2*eps
+    target_sum = torch.sum(target)
+    union = result_sum + target_sum + 2*eps
     intersect = np.max([eps, intersect])
-    # the Y volume can be empty - so we still want to
+    # the target volume can be empty - so we still want to
     # end up with a score of 1 if the result is 0/0
     IoU = intersect / union
-    #    print('union: {:.3f}\t intersect: {:.6f}\t Y_sum: {:.0f} IoU: result_sum: {:.0f} IoU {:.7f}'.format(
-    #        union, intersect, Y_sum, result_sum, 2*IoU))
+    #    print('union: {:.3f}\t intersect: {:.6f}\t target_sum: {:.0f} IoU: result_sum: {:.0f} IoU {:.7f}'.format(
+    #        union, intersect, target_sum, result_sum, 2*IoU))
     return 2 * IoU
 
 default_configs = {
