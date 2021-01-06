@@ -118,10 +118,10 @@ def train(**kwargs):
                     i += 1
 
         for phase in configs['phases']:
-            epoch_domain_loss = running_domain_loss[phase] / sample_count
-            epoch_domain_acc = running_domain_acc[phase] / sample_count
-            epoch_seg_loss = running_seg_loss[phase] / sample_count
-            print('Phase: {}, Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}, Domain Acc: {:.4f}'.format(phase, epoch, epoch_domain_loss, epoch_seg_loss, epoch_domain_acc))
+            epoch_domain_loss[phase] = running_domain_loss[phase] / sample_count
+            epoch_domain_acc[phase] = running_domain_acc[phase] / sample_count
+            epoch_seg_loss[phase] = running_seg_loss[phase] / sample_count
+            print('Phase: {}, Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}, Domain Acc: {:.4f}'.format(phase, epoch, epoch_domain_loss[phase], epoch_seg_loss[phase], epoch_domain_acc[phase]))
 
         if epoch == configs['num_epochs'] // 2:
             groups.append('all_source')

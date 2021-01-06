@@ -16,9 +16,9 @@ class kMRI(Dataset):
 
         if pickle_name is None:
             if balanced:
-                pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_{}.pickle'
+                pickle_name = f'/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_{src}.pickle'
             else:
-                pickle_name = '/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_ALLfiles_{}.pickle'
+                pickle_name = f'/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_ALLfiles_{src}.pickle'
 
         if group == 'all':
             h = lambda x: True
@@ -27,7 +27,7 @@ class kMRI(Dataset):
         elif group == 'target':
             h = lambda x: '.mat' not in x[1]
 
-        self.data = list(filter(h, load_pickle(pickle_name.format(src))))
+        self.data = list(filter(h, load_pickle(pickle_name)))
         self.src = src
 
     def __len__(self):
