@@ -96,6 +96,7 @@ def train(**kwargs):
                         seg_label = seg_label.half()
                         domain_label = domain_label.half()
 
+                    print(domain_label.shape())
 
                     optimizer.zero_grad()
 
