@@ -25,9 +25,9 @@ def train(**kwargs):
             'train': DataLoader(dataset=kMRI('train', balanced=True, group='all'), batch_size=configs['balanced_batch_size'], shuffle=True, num_workers=configs['num_workers']),
             'valid': DataLoader(dataset=kMRI('valid', balanced=True, group='all'), batch_size=configs['balanced_batch_size'], shuffle=True, num_workers=configs['num_workers'])
         },
-        'source_only': {
-            'train': DataLoader(dataset=kMRI('train', balanced=False, group='source'), batch_size=2 * configs['source_only_batch_size'], shuffle=True, num_workers=configs['num_workers']),
-            'valid': DataLoader(dataset=kMRI('valid', balanced=False, group='source'), batch_size=2 * configs['source_only_batch_size'], shuffle=True, num_workers=configs['num_workers'])
+        'all_source': {
+            'train': DataLoader(dataset=kMRI('train', balanced=False, group='source'), batch_size=2 * configs['all_source_batch_size'], shuffle=True, num_workers=configs['num_workers']),
+            'valid': DataLoader(dataset=kMRI('valid', balanced=False, group='source'), batch_size=2 * configs['all_source_batch_size'], shuffle=True, num_workers=configs['num_workers'])
         }
     }
 

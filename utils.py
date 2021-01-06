@@ -7,10 +7,12 @@ def dice_loss(X, Y):
     return 2 * (torch.dot(X, Y) / (torch.dot(X, X) + torch.dot(Y, Y)))
 
 default_configs = {
-    'batch_size': 8,
+    'balanced_batch_size': 8,
+    'all_source_batch_size': 16,
     'learning_rate':  10e-5,
     'seg_loss': 'dice',
     'domain_loss': 'bce',
+    'weight_decay': 1,
     'print_progress': True,
     'model': 'davnet2d',
     'classes': 6,
