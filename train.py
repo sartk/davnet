@@ -130,10 +130,10 @@ def train(**kwargs):
         if epoch == configs['num_epochs'] // 2:
             groups.append('all_source')
 
-        if (epoch_domain_loss['valid'] < best_valid_acc['domain']) and (epoch_seg_loss['valid'] < best_valid_acc['seg']):
+        if (epoch_domain_loss['valid'] < best_valid_loss['domain']) and (epoch_seg_loss['valid'] < best_valid_loss['seg']):
             patience_counter = 0
-            best_valid_acc['domain'] = epoch_domain_loss['valid']
-            epoch_seg_loss['valid'] = best_valid_acc['seg']
+            best_valid_loss['domain'] = epoch_domain_loss['valid']
+            epoch_seg_loss['valid'] = best_valid_loss['seg']
             torch.save({
                         'epoch': epoch,
                         'phase': phase,
