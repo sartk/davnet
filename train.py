@@ -9,12 +9,15 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from evaluate import evaluate
+import os
 
 def train(**kwargs):
 
     configs = default_configs.copy()
     configs.update(kwargs)
+
     tracker = tqdm if configs['print_progress'] else identity_tracker
+    os.environ['CUDA_VISIBLE_DEVICES'] = configs['CUDA_VISIBLE_DEVICES']
     timestamp = time.strftime("%Y%m%d-%H%M%S")
 
     dataloaders = {
@@ -41,18 +44,29 @@ def train(**kwargs):
     else:
         raise NotImplementedError('{} not setup.'.format(configs['optimizer']))
 
-    #best_valid_loss = np.inf
-    #best_valid_acc = 0
-    #patience_counter = 0
+    best_valid_loss = {'seg': np.inf, 'domain': np.inf}
+    patience_counter = 0
+    groups = ['balanced']
 
     for epoch in tracker(range(configs['num_epochs']), desc='epoch'):
 
         sample_count = 0
-        domain_running_loss = 0
-        seg_running_loss = 0
+        correct_domain_label = 0
+        running_domain_loss = {
+            'train': 0,
+            'valid': 0,
+        }
+        running_domain_acc = {
+            'train': 0,
+            'valid': 0,
+        }
+        running_seg_loss = {
+            'train': 0,
+            'valid': 0
+        }
 
-        for group in tracker(iter(['balanced', 'all_source']), desc='group'):
-            for phase in tracker(iter(['train', 'valid']), desc='phase'):
+        for group in tracker(iter(groups), desc='group'):
+            for phase in tracker(iter(configs['phases']), desc='phase'):
 
                 model.train(phase == 'train')
                 dataloader = dataloaders[group][phase]
@@ -86,22 +100,44 @@ def train(**kwargs):
                         err.backward()
                         optimizer.step()
 
+                    running_domain_acc[phase] += (domain_pred.argmax(-1) == domain_label).sum().item()
                     sample_count += img.size(0)
-                    seg_running_loss += seg_loss.item() * img.size(0)
-                    domain_running_loss += domain_loss.item() * img.size(0)
+                    running_seg_loss[phase] += seg_loss.item() * img.size(0)
+                    running_domain_loss[phase] += domain_loss.item() * img.size(0)
 
-        epoch_domain_loss = running_domain_loss / sample_count
-        epoch_seg_loss = running_seg_loss / sample_count
+        for phase in configs['phases']:
+            epoch_domain_loss = running_domain_loss[phase] / sample_count
+            epoch_domain_acc = running_domain_acc[phase] / sample_count
+            epoch_seg_loss = running_seg_loss[phase] / sample_count
+            print('Phase: {}, Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}, Domain Acc: {:.4f}'.format(phase, epoch, epoch_domain_loss, epoch_seg_loss, epoch_domain_acc))
 
-        if configs['print_progress']:
-            print('{} Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}'.format(phase, epoch, epoch_domain_loss, epoch_seg_loss))
+        if epoch == configs['num_epochs'] // 2:
+            groups.append('all_source')
 
-        torch.save({
-                    'epoch': epoch,
-                    'model_state_dict': model.state_dict(),
-                    'optimizer_state_dict': optimizer.state_dict(),
-                    'domain_loss': epoch_domain_loss,
-                    'seg_loss': epoch_seg_loss
-                    }, os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'))
+        if (epoch_domain_loss['valid'] < best_valid_acc['domain']) and (epoch_seg_loss['valid'] < best_valid_acc['seg']):
+            patience_counter = 0
+            best_valid_acc['domain'] = epoch_domain_loss['valid']
+            epoch_seg_loss['valid'] = best_valid_acc['seg']
+            torch.save({
+                        'epoch': epoch,
+                        'phase': phase,
+                        'groups': groups,
+                        'domain_loss': epoch_domain_loss,
+                        'domain_acc': epoch_domain_acc,
+                        'seg_loss': epoch_seg_loss,
+                        'configs': configs,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        }, os.path.join(configs['checkpoint_dir'], f'{timestamp}-{phase}-{epoch}.pt'))
+        else:
+            patience_counter += 1
+            if patience_counter < patience:
+                print('\nPatience counter {}/{}.'.format(patience_counter, configs['patience']))
+            elif patience_counter == configs['patience']:
+                print('\nEarly stopping. No improvement after {} Epochs.'.format(patience_counter))
+                break
 
+        epoch_domain_loss = None  # reset loss
+        epoch_domain_acc = None
+        epoch_seg_loss = None
         gc.collect()

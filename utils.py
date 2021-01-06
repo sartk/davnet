@@ -8,15 +8,18 @@ def dice_loss(X, Y):
 
 default_configs = {
     'batch_size': 8,
-    'learning_rate':  None,
+    'learning_rate':  10e-5,
     'seg_loss': 'dice',
     'domain_loss': 'bce',
     'print_progress': True,
     'model': 'davnet2d',
     'classes': 6,
-    'half_precision': False,
+    'half_precision': True,
     'cuda': True,
-    'checkpoint_dir' = '~/davnet/checkpts'
+    'num_epochs': 100,
+    'checkpoint_dir': '~/davnet/checkpts',
+    'groups': ['balanced', 'all_source'],
+    'phases': ['train', 'valid']
 }
 
 models = {
