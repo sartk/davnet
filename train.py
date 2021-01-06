@@ -19,15 +19,15 @@ def train(**kwargs):
     tracker = tqdm if configs['print_progress'] else identity_tracker
     os.environ['CUDA_VISIBLE_DEVICES'] = configs['CUDA_VISIBLE_DEVICES']
     timestamp = time.strftime("%Y%m%d-%H%M%S")
-
+    n = configs['num_workers']
     dataloaders = {
         'balanced': {
-            'train': DataLoader(dataset=kMRI('train', balanced=True, group='all'), batch_size=configs['balanced_batch_size'], shuffle=True, num_workers=configs['num_workers']),
-            'valid': DataLoader(dataset=kMRI('valid', balanced=True, group='all'), batch_size=configs['balanced_batch_size'], shuffle=True, num_workers=configs['num_workers'])
+            'train': DataLoader(dataset=kMRI('train', balanced=True, group='all'), batch_size=configs['balanced_batch_size'], shuffle=True, num_workers=n),
+            'valid': DataLoader(dataset=kMRI('valid', balanced=True, group='all'), batch_size=configs['balanced_batch_size'], shuffle=True, num_workers=n)
         },
         'all_source': {
-            'train': DataLoader(dataset=kMRI('train', balanced=False, group='source'), batch_size=2 * configs['all_source_batch_size'], shuffle=True, num_workers=configs['num_workers']),
-            'valid': DataLoader(dataset=kMRI('valid', balanced=False, group='source'), batch_size=2 * configs['all_source_batch_size'], shuffle=True, num_workers=configs['num_workers'])
+            'train': DataLoader(dataset=kMRI('train', balanced=False, group='source'), batch_size= configs['all_source_batch_size'], shuffle=True, num_workers=n),
+            'valid': DataLoader(dataset=kMRI('valid', balanced=False, group='source'), batch_size= configs['all_source_batch_size'], shuffle=True, num_workers=n)
         }
     }
 
