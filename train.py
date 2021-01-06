@@ -117,6 +117,10 @@ def train(**kwargs):
                     running_domain_loss[phase] += domain_loss.item() * img.size(0)
                     i += 1
 
+        epoch_domain_loss = {}
+        epoch_domain_acc = {}
+        epoch_seg_loss = {}
+
         for phase in configs['phases']:
             epoch_domain_loss[phase] = running_domain_loss[phase] / sample_count
             epoch_domain_acc[phase] = running_domain_acc[phase] / sample_count
