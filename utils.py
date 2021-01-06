@@ -16,13 +16,14 @@ default_configs = {
     'print_progress': True,
     'model': 'davnet2d',
     'classes': 6,
-    'half_precision': True,
+    'half_precision': False,
     'cuda': True,
     'num_epochs': 100,
     'checkpoint_dir': '~/davnet/checkpts',
     'groups': ['balanced', 'all_source'],
     'phases': ['train', 'valid'],
     'num_workers': 4,
+    'optimizer': 'adam'
 }
 
 models = {
