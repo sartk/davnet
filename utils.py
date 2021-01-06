@@ -29,7 +29,7 @@ models = {
 }
 
 losses = {
-    'dice': utils.dice_loss,
+    'dice': dice_loss,
     'bce': nn.BCELoss()
 }
 
