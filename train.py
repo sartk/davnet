@@ -9,6 +9,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import os
+from torch.utils.data import DataLoader
 
 def train(**kwargs):
 
@@ -30,7 +31,7 @@ def train(**kwargs):
         }
     }
 
-    model = configs['model'](classes=configs['classes'])
+    model = models[configs['model']](classes=configs['classes'])
     F_seg_loss = losses[configs['seg_loss']]
     F_domain_loss = losses[configs['domain_loss']]
 

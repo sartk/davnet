@@ -21,7 +21,8 @@ default_configs = {
     'num_epochs': 100,
     'checkpoint_dir': '~/davnet/checkpts',
     'groups': ['balanced', 'all_source'],
-    'phases': ['train', 'valid']
+    'phases': ['train', 'valid'],
+    'num_workers': 4,
 }
 
 models = {
