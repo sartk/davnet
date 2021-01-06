@@ -4,7 +4,7 @@ import torch.nn as nn
 from model import DAVNet2D
 import numpy as np
 
-def dice_loss(result, target):
+def dice_loss(input, target):
     eps = 0.000001
     _, result_ = input.max(1)
     result_ = torch.squeeze(result_)
