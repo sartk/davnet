@@ -32,6 +32,13 @@ def train(**kwargs):
     }
 
     model = models[configs['model']](classes=configs['classes'])
+
+    if configs['half_precision']:
+        model.type(data_type)
+
+    if configs['cuda']:
+        model = model.cuda()
+
     F_seg_loss = losses[configs['seg_loss']]
     F_domain_loss = losses[configs['domain_loss']]
 
