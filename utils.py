@@ -5,13 +5,11 @@ from model import DAVNet2D
 
 def dice_loss(Y_hat, Y):
     assert Y_hat.size() == Y.size()
-    Y_hat = torch.flatten(Y_hat, start_dim=1)
-    Y = torch.flatten(Y, start_dim=1)
+    Y, Y_hat = torch.flatten(Y, start_dim=1), torch.flatten(Y_hat, start_dim=1)
     b, L = Y.size(0), Y.size(1)
-
-    I = 2 * torch.bmm(Y.view(b, 1, L), Y_hat.view(b, L, 1))
-    U = torch.dot(Y.view(b, 1, L), Y.view(b, 1, L)) +
-        torch.dot(Y_hat.view(b, 1, L), Y_hat.view(b, 1, L))
+    M1, M2 = Y.view(b, 1, L), Y_hat.view(b, L, 1)
+    I = 2 * torch.bmm(M1, M2)
+    U = torch.bmm(M1, M1) + torch.bmm(M2, M2)
     return I/U
 
 default_configs = {
