@@ -134,7 +134,7 @@ def train(**kwargs):
             patience_counter = 0
             best_valid_loss['domain'] = epoch_domain_loss['valid']
             epoch_seg_loss['valid'] = best_valid_loss['seg']
-            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{phase}-{epoch}.pt'), 'wb+'):
+            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{phase}-{epoch}.pt'), 'wb+') as f:
                 torch.save({
                             'epoch': epoch,
                             'phase': phase,
