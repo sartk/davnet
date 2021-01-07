@@ -46,6 +46,7 @@ def train(**kwargs):
             ax5.plot(epochs_axis, dom_acc_train, '.-')
             ax6.plot(epochs_axis, dom_acc_val, '.-')
             draw()
+            show(block=False)
 
         reload_plots()
         ax1.set_ylabel('Training Segmentation Loss')
@@ -215,6 +216,3 @@ def train(**kwargs):
         epoch_domain_acc = None
         epoch_seg_loss = None
         gc.collect()
-
-    if configs['plot_progress']:
-        show()
