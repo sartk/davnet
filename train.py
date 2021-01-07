@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 from matplotlib.pyplot import plot, draw, show
 
-
 def train(**kwargs):
 
     configs = default_configs.copy()
@@ -104,23 +103,16 @@ def train(**kwargs):
 
     for epoch in tracker(range(N), desc='epoch'):
 
-        sample_count = {
-            'train': 0,
-            'valid': 0
-        }
+
+        sample_count = phase_counter.copy()
         correct_domain_label = 0
-        running_domain_loss = {
-            'train': 0,
-            'valid': 0,
-        }
-        running_domain_acc = {
-            'train': 0,
-            'valid': 0,
-        }
-        running_seg_loss = {
-            'train': 0,
-            'valid': 0
-        }
+        running_domain_loss = phase_counter.copy()
+        running_domain_acc = phase_counter.copy()
+        running_seg_loss = phase_counter.copy()
+        labeled_source = phase_counter.copy()
+        labeled_target = phase_counter.copy()
+        pred_source = phase_counter.copy()
+        pred_target = phase_counter.copy()
 
         for group in tracker(iter(groups), desc='group'):
             for phase in tracker(iter(configs['phases']), desc='phase'):
@@ -158,6 +150,12 @@ def train(**kwargs):
                         err.backward()
                         optimizer.step()
 
+                    labeled_source[phase] += (domain_label.argmax(-1) == 0).sum().item()
+                    labeled_target[phase] += (domain_label.argmax(-1) == 1).sum().item()
+                    pred_source[phase] += (domain_pred.argmax(-1) == 0).sum().item()
+                    pred_target[phase] += (domain_pred.argmax(-1) == 1).sum().item()
+
+
                     running_domain_acc[phase] += (domain_pred.argmax(-1) == domain_label.argmax(-1)).sum().item()
                     sample_count[phase] += img.size(0)
                     running_seg_loss[phase] += seg_loss.item()
@@ -173,7 +171,7 @@ def train(**kwargs):
             epoch_domain_acc[phase] = running_domain_acc[phase] / sample_count[phase]
             epoch_seg_loss[phase] = running_seg_loss[phase] / sample_count[phase]
             print('Phase: {}, Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}, Domain Acc: {:.4f}'.format(phase, epoch, epoch_domain_loss[phase], epoch_seg_loss[phase], epoch_domain_acc[phase]))
-
+            print('Labeled source: {}, Labeled target: {}, Predicted source: {}, Predicted target: {}'.format(labeled_source[phase], labeled_target[phase], running_seg_loss[phase], running_domain_loss[phase]))
         if epoch == N // 5:
             groups.append('all_source')
 
