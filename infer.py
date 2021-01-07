@@ -2,7 +2,7 @@ from model import DAVNet2D
 from dataset import *
 import matplotlib.pyplot as plt
 import numpy as np
-
+import sys
 
 model = DAVNet2D()
 PATH = sys.argv[1]
