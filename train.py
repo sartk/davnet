@@ -211,8 +211,7 @@ def train(**kwargs):
 
         if configs['plot_progress']:
             reload_plots()
-            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}.pt'), 'wb+') as f:
-                fig.savefig(f)
+            fig.savefig(os.path.join(configs['plots_dir'], f'{timestamp}.png')
 
         epoch_domain_loss = None  # reset loss
         epoch_domain_acc = None
