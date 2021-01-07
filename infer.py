@@ -14,7 +14,7 @@ data = kMRI('valid', balanced=True, group='all')
 
 while True:
     print()
-    i = input('Enter Image Index (0 - {})'.format(len(data) - 1))
+    i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
     image, segmentation, domain = data[i]
     image = image.view(344, 344).numpy()
     seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
