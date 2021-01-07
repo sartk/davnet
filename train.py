@@ -177,7 +177,7 @@ def train(**kwargs):
         if epoch == N // 2:
             groups.append('all_source')
 
-        if (epoch_domain_loss['valid'] < best_valid_loss['domain']) and (epoch_seg_loss['valid'] < best_valid_loss['seg']):
+        if (epoch_domain_loss['valid'] < best_valid_loss['domain']) or (epoch_seg_loss['valid'] < best_valid_loss['seg']):
             patience_counter = 0
             best_valid_loss['domain'] = epoch_domain_loss['valid']
             epoch_seg_loss['valid'] = best_valid_loss['seg']
