@@ -3,6 +3,7 @@ from dataset import *
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import torch
 
 model = DAVNet2D()
 PATH = sys.argv[1]
@@ -16,7 +17,8 @@ while True:
     print()
     i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
     image, segmentation, domain = data[i]
-    seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
+    with torch.no_grad():
+        seg_pred, dom_pred = model.eval(image.view(1, 1, 344, 344), 0, False)
     image = image.view(344, 344).numpy()
     seg_pred = seg_pred.view(-1, 344, 344).numpy()
     segmentation = segmentation.view(-1, 344, 344).numpy()
