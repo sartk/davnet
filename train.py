@@ -60,7 +60,10 @@ def train(**kwargs):
 
     for epoch in tracker(range(configs['num_epochs']), desc='epoch'):
 
-        sample_count = 0
+        sample_count = {
+            'train': 0,
+            'valid': 0
+        }
         correct_domain_label = 0
         running_domain_loss = {
             'train': 0,
@@ -112,7 +115,7 @@ def train(**kwargs):
                         optimizer.step()
 
                     running_domain_acc[phase] += (domain_pred.argmax(-1) == domain_label.argmax(-1)).sum().item()
-                    sample_count += img.size(0)
+                    sample_count[phase] += img.size(0)
                     running_seg_loss[phase] += seg_loss.item() * img.size(0)
                     running_domain_loss[phase] += domain_loss.item() * img.size(0)
                     i += 1
@@ -122,9 +125,9 @@ def train(**kwargs):
         epoch_seg_loss = {}
 
         for phase in configs['phases']:
-            epoch_domain_loss[phase] = running_domain_loss[phase] / sample_count
-            epoch_domain_acc[phase] = running_domain_acc[phase] / sample_count
-            epoch_seg_loss[phase] = running_seg_loss[phase] / sample_count
+            epoch_domain_loss[phase] = running_domain_loss[phase] / sample_count[phase]
+            epoch_domain_acc[phase] = running_domain_acc[phase] / sample_count[phase]
+            epoch_seg_loss[phase] = running_seg_loss[phase] / sample_count[phase]
             print('Phase: {}, Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}, Domain Acc: {:.4f}'.format(phase, epoch, epoch_domain_loss[phase], epoch_seg_loss[phase], epoch_domain_acc[phase]))
 
         if epoch == configs['num_epochs'] // 2:
