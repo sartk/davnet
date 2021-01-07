@@ -1,6 +1,7 @@
 from model import DAVNet2D
 from dataset import *
 import matplotlib.pyplot as plt
+from matplotlib.colors import Colormap
 import numpy as np
 import sys
 import torch
@@ -32,8 +33,8 @@ while True:
     f.add_subplot(1,3, 1)
     plt.imshow(image, cmap='gray')
     f.add_subplot(1,3, 2)
-    plt.imshow(segmentation, cmap='Qualitative')
+    plt.imshow(segmentation,cmap=Colormap('Qualitative'))
     f.add_subplot(1,3, 3)
-    plt.imshow(seg_pred, cmap='Qualitative')
+    plt.imshow(seg_pred, cmap=Colormap('Qualitative'))
 
     plt.show(block=True)
