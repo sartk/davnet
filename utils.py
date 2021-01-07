@@ -16,7 +16,7 @@ def dice_loss(Y_hat, Y, smooth=1e-10):
 
 default_configs = {
     'balanced_batch_size': 8,
-    'all_source_batch_size': 16,
+    'all_source_batch_size': 32,
     'learning_rate':  10e-5,
     'seg_loss': 'dice',
     'domain_loss': 'bce',
@@ -34,7 +34,9 @@ default_configs = {
     'num_workers': 4,
     'optimizer': 'adam',
     'plot_progress': True,
-    'patience': 5
+    'patience': 5,
+    'grad_reversal_coef_peak': 8,
+    'grad_reversal_growth': 10,
 }
 
 models = {
