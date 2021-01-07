@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import os
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
-
+from matplotlib.pyplot import plot, draw, show
 
 
 def train(**kwargs):
@@ -45,6 +45,8 @@ def train(**kwargs):
             ax4.plot(epochs_axis, dom_loss_val, '.-')
             ax5.plot(epochs_axis, dom_acc_train, '.-')
             ax6.plot(epochs_axis, dom_acc_val, '.-')
+            for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
+                ax.draw_idle()
 
         reload_plots()
         ax1.set_ylabel('Training Segmentation Loss')
@@ -58,7 +60,7 @@ def train(**kwargs):
         plt.show()
 
 
-    tracker = tqdm if configs['best_valid_lossgress'] else identity_tracker
+    tracker = tqdm if configs['print_progress'] else identity_tracker
     os.environ['CUDA_VISIBLE_DEVICES'] = configs['CUDA_VISIBLE_DEVICES']
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     n = configs['num_workers']
@@ -214,3 +216,6 @@ def train(**kwargs):
         epoch_domain_acc = None
         epoch_seg_loss = None
         gc.collect()
+
+    if configs['plot_progress']:
+        show()
