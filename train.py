@@ -196,7 +196,7 @@ def train(**kwargs):
                             }, f)
         else:
             patience_counter += 1
-            if patience_counter < patience:
+            if patience_counter < configs['patience']:
                 print('\nPatience counter {}/{}.'.format(patience_counter, configs['patience']))
             elif patience_counter == configs['patience']:
                 print('\nEarly stopping. No improvement after {} Epochs.'.format(patience_counter))

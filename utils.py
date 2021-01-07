@@ -33,7 +33,8 @@ default_configs = {
     'phases': ['train', 'valid'],
     'num_workers': 4,
     'optimizer': 'adam',
-    'plot_progress': True
+    'plot_progress': True,
+    'patience': 5
 }
 
 models = {
