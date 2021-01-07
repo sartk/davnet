@@ -33,8 +33,8 @@ while True:
     f.add_subplot(1,3, 1)
     plt.imshow(image, cmap='gray')
     f.add_subplot(1,3, 2)
-    plt.imshow(segmentation,cmap=Colormap('Qualitative'))
+    plt.imshow(segmentation)
     f.add_subplot(1,3, 3)
-    plt.imshow(seg_pred, cmap=Colormap('Qualitative'))
+    plt.imshow(seg_pred)
 
     plt.show(block=True)
