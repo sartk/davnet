@@ -45,8 +45,7 @@ def train(**kwargs):
             ax4.plot(epochs_axis, dom_loss_val, '.-')
             ax5.plot(epochs_axis, dom_acc_train, '.-')
             ax6.plot(epochs_axis, dom_acc_val, '.-')
-            for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
-                ax.draw_idle()
+            draw()
 
         reload_plots()
         ax1.set_ylabel('Training Segmentation Loss')
