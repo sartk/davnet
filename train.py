@@ -32,8 +32,7 @@ def train(**kwargs):
         dom_loss_val = np.repeat(np.nan, N)
         dom_acc_train = np.repeat(np.nan, N)
         dom_acc_val = np.repeat(np.nan, N)
-        plt.ion()
-        plt.show()
+        plt.ioff()
 
         fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(6, 1)
         fig.suptitle('Performance')
@@ -47,7 +46,7 @@ def train(**kwargs):
             ax4.plot(epochs_axis, dom_loss_val, '.-')
             ax5.plot(epochs_axis, dom_acc_train, '.-')
             ax6.plot(epochs_axis, dom_acc_val, '.-')
-            draw()
+            plt.draw()
 
         reload_plots()
         ax1.set_ylabel('Training Segmentation Loss')
@@ -212,6 +211,8 @@ def train(**kwargs):
 
         if configs['plot_progress']:
             reload_plots()
+            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}.pt'), 'wb+') as f:
+                fig.savefig(f)
 
         epoch_domain_loss = None  # reset loss
         epoch_domain_acc = None

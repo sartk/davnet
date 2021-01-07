@@ -28,6 +28,7 @@ default_configs = {
     'cuda': True,
     'num_epochs': 100,
     'checkpoint_dir': '/data/bigbone6/skamat/checkpoints-davnet',
+    'plots_dir': '/data/bigbone6/skamat/plots-davnet',
     'groups': ['balanced', 'all_source'],
     'phases': ['train', 'valid'],
     'num_workers': 4,
