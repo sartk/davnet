@@ -48,5 +48,10 @@ losses = {
     'bce': nn.BCELoss()
 }
 
+phase_counter = {
+    'train': 0,
+    'valid': 0
+}
+
 def identity_tracker(x, **kwargs):
     return x
