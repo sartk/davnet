@@ -31,7 +31,8 @@ default_configs = {
     'groups': ['balanced', 'all_source'],
     'phases': ['train', 'valid'],
     'num_workers': 4,
-    'optimizer': 'adam'
+    'optimizer': 'adam',
+    'plot_progress': True
 }
 
 models = {

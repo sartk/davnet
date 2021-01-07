@@ -10,13 +10,55 @@ import torch.optim as optim
 import torch.nn.functional as F
 import os
 from torch.utils.data import DataLoader
+import matplotlib.pyplot as plt
+
+
 
 def train(**kwargs):
 
     configs = default_configs.copy()
     configs.update(kwargs)
+    N = configs['num_epochs']
+    epochs_axis = np.arange(0, N)
 
-    tracker = tqdm if configs['print_progress'] else identity_tracker
+    def reload_plots():
+        pass
+
+    if configs['plot_progress']:
+
+        seg_loss_train = np.repeat(np.nan, N)
+        seg_loss_val = np.repeat(np.nan, N)
+        dom_loss_train = np.repeat(np.nan, N)
+        dom_loss_val = np.repeat(np.nan, N)
+        dom_acc_train = np.repeat(np.nan, N)
+        dom_acc_val = np.repeat(np.nan, N)
+
+        fig, (ax1, ax2, ax3, ax4, ax5, ax6) = plt.subplots(6, 1)
+        fig.suptitle('Performance')
+
+        def reload_plots():
+            for ax in [ax1, ax2, ax3, ax4, ax5, ax6]:
+                ax.clear()
+            ax1.plot(epochs_axis, seg_loss_train, '.-')
+            ax2.plot(epochs_axis, seg_loss_val, '.-')
+            ax3.plot(epochs_axis, dom_loss_train, '.-')
+            ax4.plot(epochs_axis, dom_loss_val, '.-')
+            ax5.plot(epochs_axis, dom_acc_train, '.-')
+            ax6.plot(epochs_axis, dom_acc_val, '.-')
+
+        reload_plots()
+        ax1.set_ylabel('Training Segmentation Loss')
+        ax2.set_ylabel('Validation Segmentation Loss')
+        ax3.set_ylabel('Training Domain Loss')
+        ax4.set_ylabel('Validation Domain Loss')
+        ax5.set_ylabel('Training Domain Accuracy ')
+        ax6.set_ylabel('Training Domain Accuracy')
+        ax6.set_xlabel('Epochs')
+
+        plt.show()
+
+
+    tracker = tqdm if configs['best_valid_lossgress'] else identity_tracker
     os.environ['CUDA_VISIBLE_DEVICES'] = configs['CUDA_VISIBLE_DEVICES']
     timestamp = time.strftime("%Y%m%d-%H%M%S")
     n = configs['num_workers']
@@ -58,7 +100,7 @@ def train(**kwargs):
     patience_counter = 0
     groups = ['balanced']
 
-    for epoch in tracker(range(configs['num_epochs']), desc='epoch'):
+    for epoch in tracker(range(N), desc='epoch'):
 
         sample_count = {
             'train': 0,
@@ -86,7 +128,7 @@ def train(**kwargs):
                 len_dataloader = len(dataloader)
                 i = 0
                 for img, seg_label, domain_label in tracker(dataloader, desc='batch'):
-                    p = float(i + epoch * len_dataloader) / configs['num_epochs'] / len_dataloader
+                    p = float(i + epoch * len_dataloader) / N / len_dataloader
                     grad_reversal_coef = 2. / (1. + np.exp(-10 * p)) - 1
 
                     if configs['cuda']:
@@ -130,7 +172,7 @@ def train(**kwargs):
             epoch_seg_loss[phase] = running_seg_loss[phase] / sample_count[phase]
             print('Phase: {}, Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}, Domain Acc: {:.4f}'.format(phase, epoch, epoch_domain_loss[phase], epoch_seg_loss[phase], epoch_domain_acc[phase]))
 
-        if epoch == configs['num_epochs'] // 2:
+        if epoch == N // 2:
             groups.append('all_source')
 
         if (epoch_domain_loss['valid'] < best_valid_loss['domain']) and (epoch_seg_loss['valid'] < best_valid_loss['seg']):
@@ -143,6 +185,7 @@ def train(**kwargs):
                             'phase': phase,
                             'groups': groups,
                             'domain_loss': epoch_domain_loss,
+                            'sample_count': sample_count,
                             'domain_acc': epoch_domain_acc,
                             'seg_loss': epoch_seg_loss,
                             'configs': configs,
@@ -156,6 +199,16 @@ def train(**kwargs):
             elif patience_counter == configs['patience']:
                 print('\nEarly stopping. No improvement after {} Epochs.'.format(patience_counter))
                 break
+
+        seg_loss_train[epoch] = epoch_seg_loss['train']
+        seg_loss_val[epoch] = epoch_seg_loss['valid']
+        dom_loss_train[epoch] = epoch_domain_loss['train']
+        dom_loss_val[epoch] = epoch_seg_loss['valid']
+        dom_acc_train[epoch] = epoch_domain_acc['train']
+        dom_acc_val[epoch] = epoch_domain_acc['valid']
+
+        if configs['plot_progress']:
+            reload_plots()
 
         epoch_domain_loss = None  # reset loss
         epoch_domain_acc = None
