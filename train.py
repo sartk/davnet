@@ -98,7 +98,7 @@ def train(**kwargs):
         raise NotImplementedError('{} not setup.'.format(configs['optimizer']))
 
     if configs['checkpoint']:
-        checkpoint = configs['checkpoint']
+        checkpoint = torch.load(configs['checkpoint'])
         model.load_state_dict(checkpoint['model_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
 
@@ -188,7 +188,7 @@ def train(**kwargs):
             patience_counter = 0
             best_valid_loss['domain'] = epoch_domain_loss['valid']
             epoch_seg_loss['valid'] = best_valid_loss['seg']
-            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{phase}-{epoch}.pt'), 'wb+') as f:
+            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'), 'wb+') as f:
                 torch.save({
                             'epoch': epoch,
                             'phase': phase,
