@@ -119,9 +119,12 @@ def train(**kwargs):
                         err.backward()
                         optimizer.step()
 
+                    if group == 'balanced':
+                        M['running_domain_acc'][phase] += (domain_pred.argmax(1) == domain_label.argmax(1)).sum().item()
+                        M['balanced_sample_count'][phase] += img.size(0)
+
                     M['pred_source'][phase] += (domain_pred.argmax(1) == 0).sum().item()
                     M['pred_target'][phase] += (domain_pred.argmax(1) == 1).sum().item()
-                    M['running_domain_acc'][phase] += (domain_pred.argmax(1) == domain_label.argmax(1)).sum().item()
                     M['sample_count'][phase] += img.size(0)
                     M['running_seg_loss'][phase] += seg_loss.item()
                     M['running_domain_loss'][phase] += domain_loss.item() * img.size(0)
