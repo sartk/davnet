@@ -29,7 +29,6 @@ default_configs = {
     'num_epochs': 100,
     'checkpoint_dir': '/data/bigbone6/skamat/checkpoints-davnet',
     'plots_dir': '/data/bigbone6/skamat/plots-davnet',
-    'groups': ['balanced', 'all_source'],
     'phases': ['train', 'valid'],
     'num_workers': 4,
     'optimizer': 'adam',
@@ -37,7 +36,9 @@ default_configs = {
     'patience': 5,
     'grad_reversal_coef': 8,
     'grad_reversal_growth': 10,
-    'blind_target': False
+    'blind_target': False,
+    'all_source_epoch': 20,
+    'checkpoint': None
 }
 
 models = {

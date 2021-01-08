@@ -97,12 +97,19 @@ def train(**kwargs):
     else:
         raise NotImplementedError('{} not setup.'.format(configs['optimizer']))
 
+    if configs['checkpoint']:
+        checkpoint = configs['checkpoint']
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
     best_valid_loss = {'seg': np.inf, 'domain': np.inf}
     patience_counter = 0
     groups = ['balanced']
 
     for epoch in tracker(range(N), desc='epoch'):
 
+        if epoch == configs['all_source_epoch']:
+            groups.append('all_source')
 
         sample_count = phase_counter.copy()
         correct_domain_label = 0
@@ -116,6 +123,7 @@ def train(**kwargs):
         epoch_domain_loss = {}
         epoch_domain_acc = {}
         epoch_seg_loss = {}
+
         for phase in tracker(iter(configs['phases']), desc='phase'):
             for group in tracker(iter(groups), desc='group'):
                 model.train(phase == 'train')
@@ -141,7 +149,7 @@ def train(**kwargs):
                     if group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                     elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([[1, 0]] * configs['all_source_batch_size']).float()
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([[1, 0]] * configs['all_source_batch_size']).float().cuda()
 
                     is_source = (domain_label.argmax(1) == 0).int()
                     is_target = (domain_label.argmax(1) == 1).int()
@@ -175,8 +183,6 @@ def train(**kwargs):
             epoch_seg_loss[phase] = running_seg_loss[phase] / sample_count[phase]
             print('Phase: {}, Epoch: {}, Domain Loss: {:.4f}, Seg Loss: {:.4f}, Domain Acc: {:.4f}'.format(phase, epoch, epoch_domain_loss[phase], epoch_seg_loss[phase], epoch_domain_acc[phase]))
             print('Labeled source: {}, Labeled target: {}, Predicted source: {}, Predicted target: {}'.format(labeled_source[phase], labeled_target[phase], pred_source[phase], pred_target[phase]))
-        if epoch == N // 5:
-            groups.append('all_source')
 
         if (epoch_domain_loss['valid'] < best_valid_loss['domain']) or (epoch_seg_loss['valid'] < best_valid_loss['seg']):
             patience_counter = 0
