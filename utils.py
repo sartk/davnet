@@ -23,7 +23,7 @@ default_configs = {
     'weight_decay': 1,
     'print_progress': True,
     'model': 'davnet2d',
-    'classes': 6,
+    'classes': 4,
     'half_precision': False,
     'cuda': True,
     'num_epochs': 100,

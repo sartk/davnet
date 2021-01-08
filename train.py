@@ -68,14 +68,15 @@ def train(**kwargs):
     for epoch in tracker(range(N), desc='epoch'):
 
         if epoch == configs['all_source_epoch']:
-            groups.insert(0, 'all_source')
+            groups.append('all_source')
 
-        M = {}
-
-        for m in all_metrics:
-            M[m] = phase_counter.copy()
+        metrics = {'train': {}, 'valid': {}}
+        for phase in M:
+            for m in all_metrics:
+                metrics[phase][m] = 0
 
         for phase in tracker(iter(configs['phases']), desc='phase'):
+            M = metrics[phase]
             for group in tracker(iter(groups), desc='group'):
                 model.train(phase == 'train')
                 dataloader = dataloaders[group][phase]
@@ -104,8 +105,8 @@ def train(**kwargs):
 
                     is_source = (domain_label.argmax(1) == 0).int()
                     is_target = (domain_label.argmax(1) == 1).int()
-                    M['labeled_source'][phase] += is_source.sum().item()
-                    M['labeled_target'][phase] += is_target.sum().item()
+                    M['labeled_source'] += is_source.sum().item()
+                    M['labeled_target'] += is_target.sum().item()
 
                     # hide segmentation labels from target dataset
                     if configs['blind_target']:
@@ -120,34 +121,34 @@ def train(**kwargs):
                         optimizer.step()
 
                     if group == 'balanced':
-                        M['running_domain_acc'][phase] += (domain_pred.argmax(1) == domain_label.argmax(1)).sum().item()
-                        M['balanced_sample_count'][phase] += img.size(0)
+                        M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label.argmax(1)).sum().item()
+                        M['balanced_sample_count'] += img.size(0)
 
-                    M['pred_source'][phase] += (domain_pred.argmax(1) == 0).sum().item()
-                    M['pred_target'][phase] += (domain_pred.argmax(1) == 1).sum().item()
-                    M['sample_count'][phase] += img.size(0)
-                    M['running_seg_loss'][phase] += seg_loss.item()
-                    M['running_domain_loss'][phase] += domain_loss.item() * img.size(0)
+                    M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
+                    M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
+                    M['sample_count'] += img.size(0)
+                    M['running_seg_loss'] += seg_loss.item()
+                    M['running_domain_loss'] += domain_loss.item() * img.size(0)
                     i += 1
 
                 pprint(M)
 
-            M['epoch_domain_loss'][phase] = M['running_domain_loss'][phase] / M['sample_count'][phase]
-            M['epoch_domain_acc'][phase] = M['running_domain_acc'][phase] / M['balanced_sample_count'][phase]
-            M['epoch_seg_loss'][phase] = M['running_seg_loss'][phase] / M['sample_count'][phase]
+            M['epoch_domain_loss'] = M['running_domain_loss'] / M['sample_count']
+            M['epoch_domain_acc'] = M['running_domain_acc'] / M['balanced_sample_count']
+            M['epoch_seg_loss'] = M['running_seg_loss'] / M['sample_count']
 
             pprint(M)
 
-        if (M['epoch_domain_loss']['valid'] < best_valid_loss['domain']) or (M['epoch_seg_loss']['valid'] < best_valid_loss['seg']):
+        if (metrics['valid']['epoch_domain_loss'] < best_valid_loss['domain']) or (metrics['valid']['epoch_seg_loss'] < best_valid_loss['seg']):
             patience_counter = 0
-            best_valid_loss['domain'] = M['epoch_domain_loss']['valid']
-            M['epoch_seg_loss']['valid'] = best_valid_loss['seg']
+            best_valid_loss['domain'] = metrics['valid']['epoch_domain_loss']
+            metrics['valid']['epoch_seg_loss'] = best_valid_loss['seg']
             with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'), 'wb+') as f:
                 torch.save({
                             'epoch': epoch,
                             'phase': phase,
                             'groups': groups,
-                            'metrics': M,
+                            'metrics': metrics,
                             'configs': configs,
                             'model_state_dict': model.state_dict(),
                             'optimizer_state_dict': optimizer.state_dict(),

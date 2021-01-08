@@ -95,7 +95,14 @@ def load_oai(x,nclasses = 6):
     seg = np.zeros((seg_temp.shape[0], seg_temp.shape[1],nclasses)).astype('uint8')
     for idclasses in range(nclasses):
         seg[:,:,idclasses] = (seg_temp==idclasses).astype('uint8')
-    # [[plt.imshow(seg[...,cl]),plt.show()] for cl in range(6)]
+    if nclasses == 4:
+        # {0: 'background', 1:'TC',2:'FC',3: 'PC'}
+        seg_final = np.zeros((nr, nc, nclasses))
+        seg_final[...,0] = seg[...,0]
+        seg_final[...,1] = seg[...,1] + seg[...,3]
+        seg_final[...,2] = seg[...,2] + seg[...,4]
+        seg_final[...,3] = seg[...,5]
+        seg = seg_final
     return mri, seg
 
 def load_ucsf(x='',nclasses = 6):
@@ -118,5 +125,14 @@ def load_ucsf(x='',nclasses = 6):
     bkg[bkg>1]=0
     bkg[bkg<0]=0
     seg[:,:,0] = bkg.astype('uint8')
+
+    if nclasses == 4:
+        # {0: 'background', 1:'TC',2:'FC',3: 'PC'}
+        seg_final = np.zeros((nr, nc, nclasses))
+        seg_final[...,0] = seg[...,0]
+        seg_final[...,1] = seg[...,1] + seg[...,3]
+        seg_final[...,2] = seg[...,2] + seg[...,4]
+        seg_final[...,3] = seg[...,5]
+        seg = seg_final
     # [[plt.imshow(seg[...,cl]),plt.show()] for cl in range(6)]
     return mri, seg
