@@ -109,7 +109,7 @@ def train(**kwargs):
     for epoch in tracker(range(N), desc='epoch'):
 
         if epoch == configs['all_source_epoch']:
-            groups.append('all_source')
+            groups.append('all_source', 0)
 
         sample_count = phase_counter.copy()
         correct_domain_label = 0
