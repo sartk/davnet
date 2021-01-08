@@ -37,6 +37,7 @@ default_configs = {
     'patience': 5,
     'grad_reversal_coef': 8,
     'grad_reversal_growth': 10,
+    'blind_target': False
 }
 
 models = {

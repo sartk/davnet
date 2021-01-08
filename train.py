@@ -143,6 +143,15 @@ def train(**kwargs):
                     elif group == 'all_source':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([[1, 0]] * configs['all_source_batch_size']).float()
 
+                    is_source = (domain_label.argmax(1) == 0).int()
+                    is_target = (domain_label.argmax(1) == 1).int()
+                    labeled_source[phase] += is_source.sum().item()
+                    labeled_target[phase] += is_target.sum().item()
+
+                    # hide segmentation labels from target dataset
+                    if configs['blind_target']:
+                        seg_label = (is_source * seg_label) + (is_target * seg_pred)
+
                     seg_loss = F_seg_loss(seg_pred, seg_label)
                     domain_loss = F_domain_loss(domain_pred, domain_label)
                     err = (seg_loss + domain_loss)
@@ -151,8 +160,6 @@ def train(**kwargs):
                         err.backward()
                         optimizer.step()
 
-                    labeled_source[phase] += (domain_label.argmax(1) == 0).sum().item()
-                    labeled_target[phase] += (domain_label.argmax(1) == 1).sum().item()
                     pred_source[phase] += (domain_pred.argmax(1) == 0).sum().item()
                     pred_target[phase] += (domain_pred.argmax(1) == 1).sum().item()
 
