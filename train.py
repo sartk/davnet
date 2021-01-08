@@ -68,7 +68,7 @@ def train(**kwargs):
     for epoch in tracker(range(N), desc='epoch'):
 
         if epoch == configs['all_source_epoch']:
-            groups.insert('all_source',0)
+            groups.insert(0, 'all_source')
 
         M = {}
 
