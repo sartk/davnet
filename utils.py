@@ -55,5 +55,10 @@ phase_counter = {
     'valid': 0
 }
 
+all_metrics = ['sample_count', 'balanced_sample_count', 'running_domain_loss',
+    'running_domain_acc', 'running_seg_loss', 'labeled_source', 'labeled_target',
+    'pred_source', 'pred_target',  'epoch_domain_loss', 'epoch_domain_acc', 'epoch_seg_loss'
+    ]
+
 def identity_tracker(x, **kwargs):
     return x
