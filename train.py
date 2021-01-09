@@ -113,7 +113,7 @@ def train(**kwargs):
                     if configs['blind_target']:
                         seg_label = (is_source * seg_label) + (is_target * seg_pred)
 
-                    seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label)
+                    seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label.long())
 
                     if configs['blind_target']:
                         seg_loss = seg_loss * img.size(0) / is_source.sum()
