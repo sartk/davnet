@@ -89,7 +89,7 @@ def train(**kwargs):
                     if configs['cuda']:
                         img = img.cuda(non_blocking=True)
                         seg_label = seg_label.cuda(non_blocking=True)
-                        domain_label = domain_label.cuda(non_blocking=True)
+                        domain_label = domain_label.argmax(-1).cuda(non_blocking=True)
 
                     if configs['half_precision']:
                         img = img.half()
