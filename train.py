@@ -93,8 +93,7 @@ def train(**kwargs):
 
                     if configs['half_precision']:
                         img = img.half()
-                        domain_label = domain_label.half()
-
+                        seg_label = seg_label.half()
 
                     optimizer.zero_grad()
 
@@ -113,7 +112,7 @@ def train(**kwargs):
                     if configs['blind_target']:
                         seg_label = (is_source * seg_label) + (is_target * seg_pred)
 
-                    seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label.long())
+                    seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label)
 
                     if configs['blind_target']:
                         seg_loss = seg_loss * img.size(0) / is_source.sum()
