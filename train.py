@@ -102,8 +102,8 @@ def train(**kwargs):
                     elif group == 'all_source':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([[1, 0]] * img.size(0)).long().cuda()
 
-                    is_source = (domain_label.argmax(1) == 0).int()
-                    is_target = (domain_label.argmax(1) == 1).int()
+                    is_source = (domain_label == 0).int()
+                    is_target = (domain_label == 1).int()
                     M['labeled_source'] += is_source.sum().item()
                     M['labeled_target'] += is_target.sum().item()
 
