@@ -9,7 +9,7 @@ def batch_flatten(X):
 def dice_loss(Y_hat, Y, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     intersection = (Y * Y_hat).sum(-1).sum(-1)
-    union = Y.sum(-1).sum(-1) + Y_hat.sum(1).sum(-1)
+    union = Y.sum(-1).sum(-1) + Y_hat.sum(-1).sum(-1)
     dice = (2 * intersection) / (union + smooth)
     per_class = dice.mean(0)
     overall = per_class.mean(0)
