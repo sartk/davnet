@@ -90,6 +90,7 @@ def convert_to_oai_size(volume, tuple_parameter):
 def load_oai(x,nclasses =4):
     ['Background','LTC','LFC','MTC','MFC','PC']
     num_all_classes = 6
+    nr, nc = 344, 344
     mri_info = load_dicom(x[0])
     mri=(mri_info.pixel_array/x[-1])[20:-20,20:-20,np.newaxis]
     seg_temp= load_mat(x[1])['bin_mask'][20:-20,20:-20,x[2]]
@@ -109,6 +110,7 @@ def load_oai(x,nclasses =4):
 def load_ucsf(x='',nclasses =4):
     mri_info = load_dicom(x[0])
     num_all_classes = 6
+    nr, nc = 344, 344
     mri = convert_to_oai_size(volume=mri_info.pixel_array, tuple_parameter=find_parameters_physical_alignment_to_oai_size(mri_info)).astype(np.float32)
     mri=mri[20:-20,20:-20,np.newaxis]
     all_max_values_ucsf_volumes=load_pickle('/data/bigbone6/fcaliva/VBR_python/max_values_ucsf_volumes.pickle')
