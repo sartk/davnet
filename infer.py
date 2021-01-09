@@ -9,7 +9,7 @@ import torch
 model = DAVNet2D()
 PATH = sys.argv[1]
 
-checkpoint = torch.load(PATH)
+checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
