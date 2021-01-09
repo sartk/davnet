@@ -24,10 +24,11 @@ while True:
     image = image.view(344, 344).numpy()
     seg_pred = seg_pred.view(-1, 344, 344).argmax(0).numpy()
     segmentation = segmentation.view(-1, 344, 344).argmax(0).numpy()
+    print("True Domain: {}, Predicted Domain: {}".format(domain, dom_pred))
     dom_pred = dom_pred.argmax(-1).view(-1)[0].item()
     domain = domain.view(-1)[0].item()
 
-    print("True Domain: {}, Predicted Domain: {}".format(domain, dom_pred))
+    #print("True Domain: {}, Predicted Domain: {}".format(domain, dom_pred))
 
     f = plt.figure()
     f.add_subplot(1,3, 1)

@@ -40,29 +40,15 @@ class DomainClassifier(nn.Module):
         self.bn2 = nn.BatchNorm1d(2048)
         self.relu2 = nn.ReLU(True)
         self.fc3 = nn.Linear(2048, 2)
-        self.softmax = nn.Softmax(dim=1)
+        self.softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, x):
         out = self.pool(x)
         out = out.view(out.size(0), -1)
         out = self.relu1(self.bn1(self.fc1(out)))
         out = self.relu2(self.bn2(self.fc2(out)))
-        out = self.softmax(self.fc3(out))
+        out = self.softmax(self.fc3(out).view(x.size(0), 2))
         return out
-
-"""
-def DomainClassifier():
-    c = nn.Sequential()
-    c.add_module('d_fc1', nn.Linear(256, 2048))
-    c.add_module('d_bn1', nn.BatchNorm1d(2048))
-    c.add_module('d_relu1', nn.ReLU(True))
-    c.add_module('d_fc2', nn.Linear(2048, 2048))
-    c.add_module('d_bn2', nn.BatchNorm1d(2048))
-    c.add_module('d_rel2u2', nn.ReLU(True))
-    c.add_module('d_fc3', nn.Linear(2048, 2))
-    c.add_module('d_softmax', nn.Softmax(dim=1))
-    return c
-"""
 
 def passthrough(x, **kwargs):
     return x
@@ -144,7 +130,7 @@ class DownTransition(nn.Module):
         self.relu1 = ELUCons(elu, out_channels)
         self.relu2 = ELUCons(elu, out_channels)
         if dropout:
-            self.do1 = nn.Dropout2d()
+            self.do1 = nn.Dropout2d(0.1)
         self.ops = _make_nConv(out_channels, num_convs, elu)
 
     def forward(self, x):
@@ -162,11 +148,11 @@ class UpTransition(nn.Module):
         self.up_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, padding=padding, stride=2)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.do1 = passthrough
-        self.do2 = nn.Dropout2d()
+        self.do2 = passthrough
         self.relu1 = ELUCons(elu, out_channels)
         self.relu2 = ELUCons(elu, out_channels)
         if dropout:
-            self.do1 = nn.Dropout2d()
+            self.do1 = nn.Dropout2d(0.1)
         self.ops = _make_nConv(out_channels * 2, num_convs, elu)
 
     def forward(self, x, skipx):

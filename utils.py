@@ -47,7 +47,7 @@ models = {
 
 losses = {
     'dice': dice_loss,
-    'bce': nn.BCELoss()
+    'bce': nn.NLLLoss()
 }
 
 phase_counter = {
