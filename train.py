@@ -71,7 +71,7 @@ def train(**kwargs):
             groups.append('all_source')
 
         metrics = {'train': {}, 'valid': {}}
-        for phase in M:
+        for phase in metrics:
             for m in all_metrics:
                 metrics[phase][m] = 0
 
