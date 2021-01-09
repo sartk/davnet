@@ -127,7 +127,7 @@ def train(**kwargs):
                         optimizer.step()
 
                     if group == 'balanced':
-                        M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label.argmax(1)).sum().item()
+                        M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label).sum().item()
                         M['balanced_sample_count'] += img.size(0)
 
                     M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
