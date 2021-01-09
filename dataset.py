@@ -87,7 +87,7 @@ def convert_to_oai_size(volume, tuple_parameter):
 
     return new_resized.astype(volume.dtype)
 
-def load_oai(x,nclasses = 6):
+def load_oai(x,nclasses =4):
     ['Background','LTC','LFC','MTC','MFC','PC']
     mri_info = load_dicom(x[0])
     mri=(mri_info.pixel_array/x[-1])[20:-20,20:-20,np.newaxis]
@@ -105,7 +105,7 @@ def load_oai(x,nclasses = 6):
         seg = seg_final
     return mri, seg
 
-def load_ucsf(x='',nclasses = 6):
+def load_ucsf(x='',nclasses =4):
     mri_info = load_dicom(x[0])
     mri = convert_to_oai_size(volume=mri_info.pixel_array, tuple_parameter=find_parameters_physical_alignment_to_oai_size(mri_info)).astype(np.float32)
     mri=mri[20:-20,20:-20,np.newaxis]

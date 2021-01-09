@@ -11,7 +11,7 @@ import torch.nn.functional as F
 import os
 from torch.utils.data import DataLoader
 from pprint import pprint
-
+import pdb
 def train(**kwargs):
 
     configs = default_configs.copy()
@@ -96,6 +96,7 @@ def train(**kwargs):
                         seg_label = seg_label.half()
                         domain_label = domain_label.half()
 
+
                     optimizer.zero_grad()
 
                     if group == 'balanced':
@@ -108,6 +109,7 @@ def train(**kwargs):
                     M['labeled_source'] += is_source.sum().item()
                     M['labeled_target'] += is_target.sum().item()
 
+                    pdb.set_trace()
                     # hide segmentation labels from target dataset
                     if configs['blind_target']:
                         seg_label = (is_source * seg_label) + (is_target * seg_pred)
