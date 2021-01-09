@@ -35,7 +35,7 @@ default_configs = {
     'optimizer': 'adam',
     'plot_progress': True,
     'patience': 5,
-    'grad_reversal_coef': 8,
+    'grad_reversal_coef': 2,
     'grad_reversal_growth': 10,
     'blind_target': False,
     'all_source_epoch': 20,

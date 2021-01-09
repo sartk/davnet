@@ -117,7 +117,7 @@ def train(**kwargs):
                     if configs['blind_target']:
                         seg_loss = seg_loss * img.size(0) / is_source.sum()
 
-                    domain_loss = F_domain_loss(domain_pred, domain_label)
+                    domain_loss = 0.1 * F_domain_loss(domain_pred, domain_label)
                     err = (seg_loss + domain_loss)
 
                     if phase == 'train':
