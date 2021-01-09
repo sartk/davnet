@@ -112,7 +112,7 @@ def train(**kwargs):
                     if configs['blind_target']:
                         seg_label = (is_source * seg_label) + (is_target * seg_pred)
 
-                    seg_loss = F_seg_loss(seg_pred, seg_label)
+                    seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label)
 
                     if configs['blind_target']:
                         seg_loss = seg_loss * img.size(0) / is_source.sum()
@@ -135,9 +135,10 @@ def train(**kwargs):
                     M['sample_count'] += img.size(0)
                     M['running_seg_loss'] += seg_loss.item()
                     M['running_domain_loss'] += domain_loss.item() * img.size(0)
+                    M['running_per_class_loss'] += per_class_loss
                     i += 1
 
-                    if i % 100 == 0:
+                    if i % 10 == 0:
                         pprint(M)
 
             M['epoch_domain_loss'] = M['running_domain_loss'] / M['sample_count']
