@@ -2,12 +2,19 @@ import torch
 import torch
 import torch.nn as nn
 from model import DAVNet2D
-
+import pickle
 def batch_flatten(X):
     return X.view(X.size(0), -1)
 
 def dice_loss(Y_hat, Y, smooth=1e-10):
     assert Y_hat.size() == Y.size()
+
+
+    with open('/data/knee_mri8/Francesco/example-sarthak.pickle', 'wb+') as f:
+        pickle.dump(f, {'Y': Y, 'Y_hat': Y_hat})
+
+    exit()
+
     intersection = (Y * Y_hat).sum(-1).sum(-1)
     union = Y.sum(-1).sum(-1) + Y_hat.sum(-1).sum(-1)
     dice = (2 * intersection) / (union + smooth)
