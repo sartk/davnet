@@ -149,7 +149,7 @@ def train(**kwargs):
             M['epoch_domain_loss'] = M['running_domain_loss'] / M['sample_count']
             M['epoch_domain_acc'] = M['running_domain_acc'] / M['balanced_sample_count']
             M['epoch_seg_loss'] = M['running_seg_loss'] / M['sample_count']
-            M['running_seg_loss' = M['running_seg_loss']/M['sample_count']
+            M['running_seg_loss'] = M['running_seg_loss']/M['sample_count']
 
             pprint(M)
 
