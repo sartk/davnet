@@ -46,7 +46,7 @@ class kMRI(Dataset):
         img = torch.from_numpy(img).permute(2, 0, 1).contiguous()
         seg = torch.from_numpy(seg).permute(2, 0, 1).contiguous()
 
-        return img.float(), seg.float(), domain.float()
+        return img.float(), seg.long(), domain.float()
 
 
 def load_pickle(path):

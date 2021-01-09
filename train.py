@@ -93,7 +93,6 @@ def train(**kwargs):
 
                     if configs['half_precision']:
                         img = img.half()
-                        seg_label = seg_label.half()
                         domain_label = domain_label.half()
 
 
@@ -102,7 +101,7 @@ def train(**kwargs):
                     if group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                     elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([[1, 0]] * img.size(0)).float().cuda()
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([[1, 0]] * img.size(0)).long().cuda()
 
                     is_source = (domain_label.argmax(1) == 0).int()
                     is_target = (domain_label.argmax(1) == 1).int()
