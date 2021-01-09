@@ -12,7 +12,7 @@ def dice_loss(Y_hat, Y, smooth=1e-10):
     intersection = (Y * Y_hat).sum(1)
     union = Y.sum(1) + Y_hat.sum(1)
     dice = (2 * intersection + smooth) / (union + smooth)
-    return (1 - dice).sum()
+    return -torch.log(dice)
 
 default_configs = {
     'balanced_batch_size': 8,
