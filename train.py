@@ -112,6 +112,9 @@ def train(**kwargs):
                     if configs['blind_target']:
                         seg_label = (is_source * seg_label) + (is_target * seg_pred)
 
+                    if i == 500:
+                        seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label, True)
+
                     seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label)
 
                     if configs['blind_target']:
