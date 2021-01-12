@@ -68,7 +68,7 @@ def train(**kwargs):
     for epoch in tracker(range(N), desc='epoch'):
 
         if epoch == configs['all_source_epoch']:
-            groups.append('all_source')
+            groups.insert('all_source', 0)
 
         metrics = {'train': {}, 'valid': {}}
         for phase in metrics:
@@ -82,14 +82,14 @@ def train(**kwargs):
                 dataloader = dataloaders[group][phase]
                 len_dataloader = len(dataloader)
                 i = 0
-                for img, seg_label, domain_label in tracker(dataloader, desc='batch'):
+                for img, seg_label, dlab in tracker(dataloader, desc='batch'):
                     p = float(i + epoch * len_dataloader) / N / len_dataloader
                     grad_reversal_coef = configs['grad_reversal_coef'] / (1. + np.exp(-configs['grad_reversal_growth'] * p)) - 1
 
                     if configs['cuda']:
                         img = img.cuda(non_blocking=True)
                         seg_label = seg_label.cuda(non_blocking=True)
-                        domain_label = domain_label.argmax(-1).cuda(non_blocking=True)
+                        domain_label = dlab.argmax(-1).cuda(non_blocking=True)
 
                     if configs['half_precision']:
                         img = img.half()
@@ -100,7 +100,7 @@ def train(**kwargs):
                     if group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                     elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), domain_label.clone().detach()
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), dlab.clone().detach().cuda(non_blocking=True)
 
                     is_source = (domain_label == 0).int()
                     is_target = (domain_label == 1).int()
