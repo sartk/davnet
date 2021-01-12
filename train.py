@@ -133,7 +133,7 @@ def train(**kwargs):
                     M['sample_count'] += img.size(0)
                     M['running_seg_loss'] += seg_loss.item()
                     M['running_domain_loss'] += domain_loss.item() * img.size(0)
-                    M['running_per_class_loss'] += per_class_loss
+                    #M['running_per_class_loss'] += per_class_loss
                     i += 1
 
                     if i % configs['log_frequency'] == 0:
