@@ -12,7 +12,7 @@ def dice_loss(Y_hat, Y, smooth=1e-10, save=False):
     Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
     intersection = (Y * Y_hat).sum(1)
     union = Y.sum(1) + Y_hat.sum(1)
-    dice = (2 * intersection + smooth) / (union + smooth))
+    dice = (2 * intersection + smooth) / (union + smooth)
     return (-torch.log(dice)).sum()
 
 default_configs = {
