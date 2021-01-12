@@ -144,6 +144,8 @@ def train(**kwargs):
                         log('Domain Acc', safe_div(M['running_domain_acc'], M['balanced_sample_count']))
                         log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
 
+                torch.cuda.empty_cache()
+
                 if phase == 'train':
                     with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}-{group}.pt'), 'wb+') as f:
                             torch.save({
