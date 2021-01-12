@@ -158,12 +158,10 @@ def train(**kwargs):
                                         'optimizer_state_dict': optimizer.state_dict(),
                                         }, f)
 
+                gc.collect()
+
             M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
             M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
             M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
 
             pprint(M)
-
-
-
-        gc.collect()
