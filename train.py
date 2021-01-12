@@ -112,7 +112,7 @@ def train(**kwargs):
                     if configs['blind_target']:
                         seg_label = (is_source * seg_label) + (is_target * seg_pred)
 
-                    seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label)
+                    seg_loss = F_seg_loss(seg_pred, seg_label)
 
                     if configs['blind_target']:
                         seg_loss = seg_loss * img.size(0) / is_source.sum()
@@ -137,15 +137,13 @@ def train(**kwargs):
                     i += 1
 
                     if i % configs['log_frequency'] == 0:
-                        log('Epoch Domain Loss',  M['running_domain_loss'] / M['sample_count'])
-                        log('Epoch Domain Acc', M['running_domain_acc'] / M['balanced_sample_count'])
-                        log('Epoch Seg Loss', M['running_seg_loss'] / M['sample_count'])
-                        log('Running Seg Loss', M['running_seg_loss']/M['sample_count'])
+                        log('Domain Loss',  M['running_domain_loss'] / M['sample_count'])
+                        log('Domain Acc', M['running_domain_acc'] / M['balanced_sample_count'])
+                        log('Seg Loss', M['running_seg_loss'] / M['sample_count'])
 
             M['epoch_domain_loss'] = M['running_domain_loss'] / M['sample_count']
             M['epoch_domain_acc'] = M['running_domain_acc'] / M['balanced_sample_count']
             M['epoch_seg_loss'] = M['running_seg_loss'] / M['sample_count']
-            M['running_seg_loss'] = M['running_seg_loss']/M['sample_count']
 
             pprint(M)
 
