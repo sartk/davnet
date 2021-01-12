@@ -137,13 +137,13 @@ def train(**kwargs):
                     i += 1
 
                     if i % configs['log_frequency'] == 0:
-                        log('Domain Loss',  M['running_domain_loss'] / M['balanced_sample_count'])
+                        log('Domain Loss',  safe_div(M['running_domain_loss'], M['balanced_sample_count']))
                         log('Domain Acc', safe_div(M['running_domain_acc'], M['balanced_sample_count']))
-                        log('Seg Loss', M['running_seg_loss'] / M['sample_count'])
+                        log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
 
-            M['epoch_domain_loss'] = M['running_domain_loss'] / M['balanced_sample_count']
-            M['epoch_domain_acc'] = M['running_domain_acc'] / M['balanced_sample_count']
-            M['epoch_seg_loss'] = M['running_seg_loss'] / M['sample_count']
+            M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
+            M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
+            M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
 
             pprint(M)
 
