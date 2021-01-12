@@ -83,6 +83,9 @@ def train(**kwargs):
                 len_dataloader = len(dataloader)
                 i = 0
                 for img, seg_label, dlab in tracker(dataloader, desc='batch'):
+
+                    n = img.size(0).item()
+
                     p = float(i + epoch * len_dataloader) / N / len_dataloader
                     grad_reversal_coef = configs['grad_reversal_coef'] / (1. + np.exp(-configs['grad_reversal_growth'] * p)) - 1
 
@@ -100,7 +103,7 @@ def train(**kwargs):
                     if group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                     elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), dlab.cuda(non_blocking=True)
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), dlab.cuda(non_blocking=True).float()
 
                     is_source = (domain_label == 0).int()
                     is_target = (domain_label == 1).int()
@@ -126,12 +129,12 @@ def train(**kwargs):
 
                     if group == 'balanced':
                         M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label).sum().item()
-                        M['balanced_sample_count'] += img.size(0)
-                        M['running_domain_loss'] += domain_loss.item() * img.size(0)
+                        M['balanced_sample_count'] += n
+                        M['running_domain_loss'] += (domain_loss * n).item()
 
                     M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
                     M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
-                    M['sample_count'] += img.size(0)
+                    M['sample_count'] += n
                     M['running_seg_loss'] += seg_loss.item()
                     #M['running_per_class_loss'] += per_class_loss
                     i += 1
@@ -141,17 +144,17 @@ def train(**kwargs):
                         log('Domain Acc', safe_div(M['running_domain_acc'], M['balanced_sample_count']))
                         log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
 
-                    if phase == 'train':
-                        with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}-{group}.pt'), 'wb+') as f:
-                                torch.save({
-                                            'epoch': epoch,
-                                            'phase': phase,
-                                            'groups': groups,
-                                            'metrics': metrics,
-                                            'configs': configs,
-                                            'model_state_dict': model.state_dict(),
-                                            'optimizer_state_dict': optimizer.state_dict(),
-                                            }, f)
+                if phase == 'train':
+                    with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}-{group}.pt'), 'wb+') as f:
+                            torch.save({
+                                        'epoch': epoch,
+                                        'phase': phase,
+                                        'groups': groups,
+                                        'metrics': metrics,
+                                        'configs': configs,
+                                        'model_state_dict': model.state_dict(),
+                                        'optimizer_state_dict': optimizer.state_dict(),
+                                        }, f)
 
             M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
             M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
