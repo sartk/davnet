@@ -112,15 +112,12 @@ def train(**kwargs):
                     if configs['blind_target']:
                         seg_label = (is_source * seg_label) + (is_target * seg_pred)
 
-                    if i == 500:
-                        seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label, True)
-
                     seg_loss, per_class_loss = F_seg_loss(seg_pred, seg_label)
 
                     if configs['blind_target']:
                         seg_loss = seg_loss * img.size(0) / is_source.sum()
 
-                    domain_loss = 0.1 * F_domain_loss(domain_pred, domain_label)
+                    domain_loss = F_domain_loss(domain_pred, domain_label)
                     err = (seg_loss + domain_loss)
 
                     if phase == 'train':
@@ -139,14 +136,11 @@ def train(**kwargs):
                     M['running_per_class_loss'] += per_class_loss
                     i += 1
 
-                    if i % 100 == 0:
-                        MM = M.copy()
-                        MM['running_per_class_loss'] = MM['running_per_class_loss']/MM['sample_count']
-                        MM['running_domain_acc'] = MM['running_domain_acc']/MM['sample_count']
-                        MM['running_domain_loss'] = MM['running_domain_loss']/MM['sample_count']
-                        MM['running_seg_loss'] = MM['running_seg_loss']/MM['sample_count']
-                        pprint(MM)
-                        del MM
+                    if i % configs['log_frequency'] == 0:
+                        log('Epoch Domain Loss',  M['running_domain_loss'] / M['sample_count'])
+                        log('Epoch Domain Acc', M['running_domain_acc'] / M['balanced_sample_count'])
+                        log('Epoch Seg Loss', M['running_seg_loss'] / M['sample_count'])
+                        log('Running Seg Loss', M['running_seg_loss']/M['sample_count'])
 
             M['epoch_domain_loss'] = M['running_domain_loss'] / M['sample_count']
             M['epoch_domain_acc'] = M['running_domain_acc'] / M['balanced_sample_count']

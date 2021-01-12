@@ -9,17 +9,13 @@ def batch_flatten(X):
 def dice_loss(Y_hat, Y, smooth=1e-10, save=False):
     assert Y_hat.size() == Y.size()
 
-    if save:
-        with open('/data/knee_mri8/Francesco/example-sarthak.pickle', 'wb+') as f:
-            pickle.dump({'Y': Y, 'Y_hat': Y_hat}, f)
-        exit()
-
     intersection = (Y * Y_hat).sum(-1).sum(-1)
     union = Y.sum(-1).sum(-1) + Y_hat.sum(-1).sum(-1)
     dice = (2 * intersection) / (union + smooth)
     per_class = dice.mean(0)
     overall = per_class.mean(0)
-    return -torch.log(overall), per_class
+
+    return (1 - overall).sum(), per_class
 
 default_configs = {
     'balanced_batch_size': 8,
@@ -38,7 +34,7 @@ default_configs = {
     'plots_dir': '/data/bigbone6/skamat/plots-davnet',
     'phases': ['train', 'valid'],
     'num_workers': 4,
-    'optimizer': 'adam',
+    'optimizer': 'sgd',
     'plot_progress': True,
     'patience': 5,
     'grad_reversal_coef': 2,
@@ -46,6 +42,7 @@ default_configs = {
     'blind_target': False,
     'all_source_epoch': 20,
     'checkpoint': None,
+    'log_frequency': 100
 }
 
 models = {
@@ -56,6 +53,8 @@ losses = {
     'dice': dice_loss,
     'bce': nn.NLLLoss()
 }
+
+log = print
 
 phase_counter = {
     'train': 0,

@@ -87,16 +87,18 @@ def convert_to_oai_size(volume, tuple_parameter):
 
     return new_resized.astype(volume.dtype)
 
-def load_oai(x,nclasses =4):
-    ['Background','LTC','LFC','MTC','MFC','PC']
+def load_oai(x,nclasses = 4):
     num_all_classes = 6
-    nr, nc = 344, 344
     mri_info = load_dicom(x[0])
     mri=(mri_info.pixel_array/x[-1])[20:-20,20:-20,np.newaxis]
+    mri/=np.percentile(mri,85)
     seg_temp= load_mat(x[1])['bin_mask'][20:-20,20:-20,x[2]]
-    seg = np.zeros((seg_temp.shape[0], seg_temp.shape[1], num_all_classes)).astype('uint8')
+    nr,nc = seg_temp.shape
+    seg = np.zeros((nr, nc,num_all_classes)).astype('uint8')
     for idclasses in range(num_all_classes):
-        seg[:,:,idclasses] = (seg_temp==idclasses).astype('uint8')
+        # {0: 'background', 1:'LTC',2:'LFC',3:'MTC',4:'MFC',5:'PC'}
+        seg[...,idclasses] = (seg_temp==idclasses).astype('uint8')
+    # [[plt.imshow(seg[...,cl]),plt.show()] for cl in range(6)]
     if nclasses == 4:
         # {0: 'background', 1:'TC',2:'FC',3: 'PC'}
         seg_final = np.zeros((nr, nc, nclasses))
@@ -104,7 +106,7 @@ def load_oai(x,nclasses =4):
         seg_final[...,1] = seg[...,1] + seg[...,3]
         seg_final[...,2] = seg[...,2] + seg[...,4]
         seg_final[...,3] = seg[...,5]
-        seg = seg_final
+        return mri, seg_final
     return mri, seg
 
 def load_ucsf(x='',nclasses =4):
@@ -117,19 +119,20 @@ def load_ucsf(x='',nclasses =4):
     max_value = all_max_values_ucsf_volumes[x[0].split('/')[-2]]['et'+str(np.array(mri_info.EchoTime,dtype=np.float32))]
 
     mri/=max_value
-    nr,nc = mri.shape[:-1]
+    mri/=np.percentile(mri,85)
+    nr, nc = mri.shape[:-1]
     # need to create the background
-    seg = np.zeros((nr,nc,num_all_classes))
-    for cl in range(num_all_classes-1):
+    seg = np.zeros((nr, nc, num_all_classes))
+    for cl in range(num_all_classes - 1):
         seg_info = load_dicom(x[1][cl])
         seg_temp = convert_to_oai_size(volume=seg_info.pixel_array, tuple_parameter=find_parameters_physical_alignment_to_oai_size(seg_info)).astype(np.float32)
-        seg[:,:,cl+1] = seg_temp[20:-20,20:-20]
+        seg[:, :, cl + 1] = seg_temp[20:-20, 20:-20]
     # create the background
     bkg = 1- seg[...,1:].sum(-1)
     bkg[bkg>1]=0
     bkg[bkg<0]=0
     seg[:,:,0] = bkg.astype('uint8')
-
+    # [[plt.imshow(seg[...,cl]),plt.show()] for cl in range(6)]
     if nclasses == 4:
         # {0: 'background', 1:'TC',2:'FC',3: 'PC'}
         seg_final = np.zeros((nr, nc, nclasses))
@@ -137,6 +140,5 @@ def load_ucsf(x='',nclasses =4):
         seg_final[...,1] = seg[...,1] + seg[...,3]
         seg_final[...,2] = seg[...,2] + seg[...,4]
         seg_final[...,3] = seg[...,5]
-        seg = seg_final
-    # [[plt.imshow(seg[...,cl]),plt.show()] for cl in range(6)]
+        return mri, seg_final
     return mri, seg
