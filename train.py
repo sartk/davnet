@@ -100,7 +100,7 @@ def train(**kwargs):
                     if group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                     elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), dlab.clone().detach().cuda(non_blocking=True)
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), dlab.clone().detach().float().cuda(non_blocking=True)
 
                     is_source = (domain_label == 0).int()
                     is_target = (domain_label == 1).int()
