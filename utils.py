@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from model import DAVNet2D
 import pickle
+
 def batch_flatten(X):
     return X.view(X.size(0), -1)
 
@@ -11,8 +12,8 @@ def dice_loss(Y_hat, Y, smooth=1e-10, save=False):
     Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
     intersection = (Y * Y_hat).sum(1)
     union = Y.sum(1) + Y_hat.sum(1)
-    dice = (2 * intersection + smooth) / (union + smooth)
-    return (1 - dice).sum()
+    dice = (2 * intersection + smooth) / (union + smooth))
+    return (-torch.log(dice)).sum()
 
 default_configs = {
     'balanced_batch_size': 8,
