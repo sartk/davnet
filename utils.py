@@ -66,3 +66,6 @@ all_metrics = ['sample_count', 'balanced_sample_count', 'running_domain_loss',
 
 def identity_tracker(x, **kwargs):
     return x
+
+def safe_div(x, y):
+    return x if y == 0 else x / y
