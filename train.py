@@ -147,11 +147,7 @@ def train(**kwargs):
 
             pprint(M)
 
-        if (metrics['valid']['epoch_domain_loss'] < best_valid_loss['domain']) or (metrics['valid']['epoch_seg_loss'] < best_valid_loss['seg']):
-            patience_counter = 0
-            best_valid_loss['domain'] = metrics['valid']['epoch_domain_loss']
-            metrics['valid']['epoch_seg_loss'] = best_valid_loss['seg']
-            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'), 'wb+') as f:
+        with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'), 'wb+') as f:
                 torch.save({
                             'epoch': epoch,
                             'phase': phase,
@@ -161,12 +157,5 @@ def train(**kwargs):
                             'model_state_dict': model.state_dict(),
                             'optimizer_state_dict': optimizer.state_dict(),
                             }, f)
-        else:
-            patience_counter += 1
-            if patience_counter < configs['patience']:
-                print('\nPatience counter {}/{}.'.format(patience_counter, configs['patience']))
-            elif patience_counter == configs['patience']:
-                print('\nEarly stopping. No improvement after {} Epochs.'.format(patience_counter))
-                break
 
         gc.collect()
