@@ -100,7 +100,7 @@ def train(**kwargs):
                     if group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                     elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), torch.tensor([[1, 0]] * img.size(0)).float().cuda()
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), domain_label.clone().detach()
 
                     is_source = (domain_label == 0).int()
                     is_target = (domain_label == 1).int()
