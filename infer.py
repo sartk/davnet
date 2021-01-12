@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import torch
 
-model = DAVNet2D()
+model = DAVNet2D(4)
 PATH = sys.argv[1]
 
 checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
