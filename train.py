@@ -84,7 +84,7 @@ def train(**kwargs):
                 i = 0
                 for img, seg_label, dlab in tracker(dataloader, desc='batch'):
 
-                    n = img.size(0).item()
+                    n = img.size(0)
 
                     p = float(i + epoch * len_dataloader) / N / len_dataloader
                     grad_reversal_coef = configs['grad_reversal_coef'] / (1. + np.exp(-configs['grad_reversal_growth'] * p)) - 1
