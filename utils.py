@@ -18,7 +18,7 @@ def dice_loss_normal(Y_hat, Y, smooth=1e-10, save=False):
 def dice_loss_per_class(Y_hat, Y, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     intersection = (Y * Y_hat).sum(-1).sum(-1)
-    union = Y.sum(-1).sum(-1) + Y_hat.sum(1).sum(-1)
+    union = Y.sum(-1).sum(-1) + Y_hat.sum(-1).sum(-1)
     dice = (2 * intersection) / (union + smooth)
     per_class = dice.sum(0)
     overall = 0.4 * per_class[0] + per_class[1] + per_class[2] + per_class[3]
