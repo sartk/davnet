@@ -15,16 +15,13 @@ def dice_loss_normal(Y_hat, Y, smooth=1e-10, save=False):
     dice = (2 * intersection + smooth) / (union + smooth)
     return (-torch.log(dice)).sum()
 
-def dice_loss_per_class(Y_hat, Y, smooth=1e-10):
+def dice_loss_weighted(Y_hat, Y, smooth=1e-10):
     assert Y_hat.size() == Y.size()
-    intersection = (Y * Y_hat).sum(-1).sum(-1)
-    union = Y.sum(-1).sum(-1) + Y_hat.sum(-1).sum(-1)
-    dice = (2 * intersection + smooth) / (union + smooth)
-    per_class = dice.sum(0)
-    overall = per_class[0] + per_class[1] + per_class[2] + per_class[3]
-    return -torch.log(overall)
+    Z = Y.clone().cuda(non_blocking=True)
+    Z[:, 0, :, :] = Y[:, 0, :, :] * 0.5
+    return dice_loss_normal(Y_hat, Z, smooth)
 
-dice_loss = dice_loss_per_class
+dice_loss = dice_loss_weighted
 
 default_configs = {
     'balanced_batch_size': 8,
