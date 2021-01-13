@@ -18,9 +18,8 @@ def dice_loss_normal(Y_hat, Y, smooth=1e-10, save=False):
 def dice_loss_weighted(Y_hat, Y, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     Z = Y.clone().cuda(non_blocking=True)
-    tot = Y.size(0) * 118336
-    for i in range(Y.size(1)):
-        Z[:, i, :, :] = Y[:, i, :, :] * tot / Y[:, i, :, :].sum()
+    Z[:, 0, :, :] = Y[:, 0, :, :] * 0.5
+    Z[:, 1:, :, :] = Y[:, 1:, :, :] * 10
     return dice_loss_normal(Y_hat, Z, smooth)
 
 dice_loss = dice_loss_weighted
