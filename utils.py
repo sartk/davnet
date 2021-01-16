@@ -22,8 +22,6 @@ def dice_loss_weighted(Y_hat, Y, smooth=1e-10):
     Z[:, 1:, :, :] = Y[:, 1:, :, :] * 10
     return dice_loss_normal(Y_hat, Z, smooth)
 
-dice_loss = dice_loss_weighted
-
 default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 32,
@@ -57,7 +55,7 @@ models = {
 }
 
 losses = {
-    'dice': dice_loss,
+    'dice': dice_loss_normal,
     'bce': nn.NLLLoss()
 }
 

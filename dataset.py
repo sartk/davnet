@@ -11,14 +11,14 @@ class kMRI(Dataset):
 
     def __init__(self, src, balanced=True, pickle_name=None, group='all'):
 
-        assert src in ['train', 'test', 'valid'], "src must be one of: 'train', 'test', 'valid'"
         assert group in ['all', 'source', 'target'], "group must be one of: 'all', 'source', 'target'"
+        assert src in ['train', 'test', 'valid'], "src must be one of: 'train', 'test', 'valid'"
 
         if pickle_name is None:
             if balanced:
-                pickle_name = f'/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_{src}.pickle'
+                pickle_name = f'/data/bigbone6/fcaliva/VBR_python/new_pickle_files/ucsf_and_oai_only_segmented_slices_{src}.pickle'
             else:
-                pickle_name = f'/data/bigbone6/fcaliva/VBR_python/pickle_files/segmented_slices_oai_and_ucsf_fixed_ALLfiles_{src}.pickle'
+                pickle_name = f'/data/bigbone6/fcaliva/VBR_python/new_pickle_files/all_files_oai_and_ucsf_only_segmented_slices_{src}.pickle'
 
         if group == 'all':
             h = lambda x: True
