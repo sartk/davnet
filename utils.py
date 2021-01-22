@@ -7,26 +7,27 @@ import pickle
 def batch_flatten(X):
     return X.view(X.size(0), -1)
 
-def dice_loss_normal(Y_hat, Y, smooth=1e-10, save=False):
+def dice_loss_normal(Y_hat, Y, smooth=1e-10, flat=False):
     assert Y_hat.size() == Y.size()
-    Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
+    if not flat:
+        Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
     intersection = (Y * Y_hat).sum(1)
     union = Y.sum(1) + Y_hat.sum(1)
     dice = (2 * intersection + smooth) / (union + smooth)
     return (-torch.log(dice)).sum()
 
-def dice_loss_weighted(Y_hat, Y, smooth=1e-10):
+def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
     assert Y_hat.size() == Y.size()
-    Z = Y.clone().cuda(non_blocking=True)
-    Z[:, 0, :, :] = Y[:, 0, :, :] * 0.5
-    Z[:, 1:, :, :] = Y[:, 1:, :, :] * 10
-    return dice_loss_normal(Y_hat, Z, smooth)
+    background_sum = Y[:, 0, :, :].sum()
+    for i in range(Y.size(1)):
+        Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum()) ** exp)
+    return dice_loss_normal(Y_hat, Y, smooth)
 
 default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 32,
     'learning_rate':  10e-5,
-    'seg_loss': 'dice',
+    'seg_loss': 'weighted_dice',
     'domain_loss': 'bce',
     'weight_decay': 1,
     'print_progress': True,
@@ -47,7 +48,7 @@ default_configs = {
     'blind_target': False,
     'all_source_epoch': 20,
     'checkpoint': None,
-    'log_frequency': 100
+    'log_frequency': 100,
 }
 
 models = {
@@ -56,6 +57,7 @@ models = {
 
 losses = {
     'dice': dice_loss_normal,
+    'weighted_dice': dice_loss_weighted,
     'bce': nn.NLLLoss()
 }
 
