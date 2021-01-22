@@ -139,7 +139,7 @@ def train(**kwargs):
                     #M['running_per_class_loss'] += per_class_loss
                     i += 1
 
-                    if i % configs['log_frequency'] == 0:
+                    if configs['log_frequency'] and i % configs['log_frequency'] == 0:
                         log('Domain Loss',  safe_div(M['running_domain_loss'], M['balanced_sample_count']))
                         log('Domain Acc', safe_div(M['running_domain_acc'], M['balanced_sample_count']))
                         log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))

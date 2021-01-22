@@ -48,7 +48,7 @@ default_configs = {
     'blind_target': False,
     'all_source_epoch': 20,
     'checkpoint': None,
-    'log_frequency': 100,
+    'log_frequency': None,
 }
 
 models = {
