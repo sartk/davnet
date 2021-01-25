@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
+import numpy as np
 
 def toy_fwd(n=1):
     x = torch.rand(n, 1, 344, 344)
@@ -21,7 +22,8 @@ class DAVNet2D(nn.Module):
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        print(out256.mean())
+        print('mean: ', out256.mean())
+        print(np.percentile(out256.numpy(), [25, 50, 75]))
         domain = self.disc(GradReversal.apply(out256, grad_reversal_coef))
         return seg, domain
 
