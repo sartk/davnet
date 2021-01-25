@@ -23,7 +23,7 @@ class DAVNet2D(nn.Module):
         if seg_only:
             return seg
         print('mean: ', out256.mean())
-        print(np.percentile(out256.numpy().flatten(), [25, 50, 75]))
+        print(np.percentile(out256.numpy().flatten(), [1, 25, 50, 75, 99]))
         domain = self.disc(GradReversal.apply(out256, grad_reversal_coef))
         return seg, domain
 
