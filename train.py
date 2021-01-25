@@ -79,6 +79,8 @@ def train(**kwargs):
             M = metrics[phase]
             for group in tracker(iter(groups), desc='group'):
                 model.train(phase == 'train')
+                if phase == 'valid':
+                    model.eval()
                 dataloader = dataloaders[group][phase]
                 len_dataloader = len(dataloader)
                 i = 0
@@ -100,28 +102,19 @@ def train(**kwargs):
 
                     optimizer.zero_grad()
 
-                    if group == 'balanced':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
-                    elif group == 'all_source':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=True), dlab.cuda(non_blocking=True).float()
-
                     is_source = (domain_label == 0).int()
                     is_target = (domain_label == 1).int()
                     M['labeled_source'] += is_source.sum().item()
                     M['labeled_target'] += is_target.sum().item()
 
-                    #pdb.set_trace()
-                    # hide segmentation labels from target dataset
-                    if configs['blind_target']:
-                        seg_label = (is_source * seg_label) + (is_target * seg_pred)
-
-                    seg_loss = F_seg_loss(seg_pred, seg_label)
-
-                    if configs['blind_target']:
-                        seg_loss = seg_loss * img.size(0) / is_source.sum()
-
-                    domain_loss = F_domain_loss(domain_pred, domain_label)
-                    err = (seg_loss + domain_loss)
+                    if group == 'balanced':
+                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
+                        if configs['blind_target']:
+                            seg_label = (is_source * seg_label) + (is_target * seg_pred)
+                        err = F_seg_loss(seg_pred, seg_label) +  F_domain_loss(domain_pred, domain_label)
+                    elif group == 'all_source':
+                        seg_pred = model(img, grad_reversal_coef, seg_only=True)
+                        err = F_seg_loss(seg_pred, seg_label)
 
                     if phase == 'train':
                         err.backward()
@@ -136,7 +129,6 @@ def train(**kwargs):
                     M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
                     M['sample_count'] += n
                     M['running_seg_loss'] += seg_loss.item()
-                    #M['running_per_class_loss'] += per_class_loss
                     i += 1
 
                     if configs['log_frequency'] and i % configs['log_frequency'] == 0:

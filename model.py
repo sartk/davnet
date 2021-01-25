@@ -21,6 +21,7 @@ class DAVNet2D(nn.Module):
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
+        print(out256.mean())
         domain = self.disc(GradReversal.apply(out256, grad_reversal_coef))
         return seg, domain
 
