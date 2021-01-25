@@ -22,8 +22,12 @@ class DAVNet2D(nn.Module):
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        print('mean: ', out256.mean())
+        print(np.percentile(out16.numpy().flatten(), [1, 25, 50, 75, 99]))
+        print(np.percentile(out32.numpy().flatten(), [1, 25, 50, 75, 99]))
+        print(np.percentile(out64.numpy().flatten(), [1, 25, 50, 75, 99]))
+        print(np.percentile(out128.numpy().flatten(), [1, 25, 50, 75, 99]))
         print(np.percentile(out256.numpy().flatten(), [1, 25, 50, 75, 99]))
+        print(out256.max())
         domain = self.disc(GradReversal.apply(out256, grad_reversal_coef))
         return seg, domain
 
