@@ -38,12 +38,7 @@ def sequential(x, funcs):
 class DomainClassifier(nn.Module):
     def __init__(self):
         super(DomainClassifier, self).__init__()
-        self.pool1 = nn.AvgPool2d(kernel_size=24, stride=1)
-        self.pool2 = nn.AvgPool2d(kernel_size=48, stride=1)
-        self.pool3 = nn.AvgPool2d(kernel_size=86, stride=1)
-        self.pool4 = nn.AvgPool2d(kernel_size=172, stride=1)
-        self.pool5 = nn.AvgPool2d(kernel_size=344, stride=1)
-
+        self.pool = nn.AvgPool2d(kernel_size=24, stride=1)
         self.fc1 = nn.Linear(256, 2048)
         self.bn1 = nn.BatchNorm1d(2048)
         self.relu1 = nn.ReLU(True)
@@ -54,6 +49,7 @@ class DomainClassifier(nn.Module):
         self.softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, x):
+        out = self.pool(out)
         out = out.view(out.size(0), -1)
         out = self.relu1(self.bn1(self.fc1(out)))
         out = self.relu2(self.bn2(self.fc2(out)))
