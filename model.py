@@ -22,7 +22,7 @@ class DAVNet2D(nn.Module):
         self.seg = VNetUp(classes)
         self.disc = DomainClassifier()
 
-    def forward(self, x, grad_reversal_coef, seg_only):
+    def forward(self, x, grad_reversal_coef=1, seg_only=False):
         out16, out32, out64, out128, out256 = self.feat(x)
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
