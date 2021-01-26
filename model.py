@@ -3,6 +3,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Function
 import numpy as np
+from torchvision import models
+from torchsummary import summary
+
+def model_summary():
+    summary(DAVNet2D(), (1, 344, 344))
 
 def toy_fwd(n=1):
     x = torch.rand(n, 1, 344, 344)
@@ -11,7 +16,7 @@ def toy_fwd(n=1):
 
 class DAVNet2D(nn.Module):
 
-    def __init__(self, classes=6):
+    def __init__(self, classes=4):
         nn.Module.__init__(self)
         self.feat = VNetDown()
         self.seg = VNetUp(classes)
@@ -22,12 +27,6 @@ class DAVNet2D(nn.Module):
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        print(np.percentile(out16.numpy().flatten(), [1, 25, 50, 75, 99]))
-        print(np.percentile(out32.numpy().flatten(), [1, 25, 50, 75, 99]))
-        print(np.percentile(out64.numpy().flatten(), [1, 25, 50, 75, 99]))
-        print(np.percentile(out128.numpy().flatten(), [1, 25, 50, 75, 99]))
-        print(np.percentile(out256.numpy().flatten(), [1, 25, 50, 75, 99]))
-        print(out256.max())
         domain = self.disc(GradReversal.apply(out256, grad_reversal_coef))
         return seg, domain
 
@@ -39,7 +38,12 @@ def sequential(x, funcs):
 class DomainClassifier(nn.Module):
     def __init__(self):
         super(DomainClassifier, self).__init__()
-        self.pool = nn.AvgPool2d(kernel_size=24, stride=1)
+        self.pool1 = nn.AvgPool2d(kernel_size=24, stride=1)
+        self.pool2 = nn.AvgPool2d(kernel_size=48, stride=1)
+        self.pool3 = nn.AvgPool2d(kernel_size=86, stride=1)
+        self.pool4 = nn.AvgPool2d(kernel_size=172, stride=1)
+        self.pool5 = nn.AvgPool2d(kernel_size=344, stride=1)
+
         self.fc1 = nn.Linear(256, 2048)
         self.bn1 = nn.BatchNorm1d(2048)
         self.relu1 = nn.ReLU(True)
@@ -50,7 +54,6 @@ class DomainClassifier(nn.Module):
         self.softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, x):
-        out = self.pool(x)
         out = out.view(out.size(0), -1)
         out = self.relu1(self.bn1(self.fc1(out)))
         out = self.relu2(self.bn2(self.fc2(out)))
