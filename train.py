@@ -64,10 +64,12 @@ def train(**kwargs):
     best_valid_loss = {'seg': np.inf, 'domain': np.inf}
     patience_counter = 0
     groups = ['balanced']
+    segmentation_warmup = True
 
     for epoch in tracker(range(N), desc='epoch'):
 
-        if epoch == configs['all_source_epoch']:
+        if epoch == configs['warmup_length']:
+            segmentation_warmup = False
             groups.insert(0, 'all_source')
 
         metrics = {'train': {}, 'valid': {}}
@@ -75,19 +77,22 @@ def train(**kwargs):
             for m in all_metrics:
                 metrics[phase][m] = 0
 
-        for phase in tracker(iter(configs['phases']), desc='phase'):
-            M = metrics[phase]
-            for group in tracker(iter(groups), desc='group'):
+        for group in tracker(iter(groups), desc='group'):
+            for phase in tracker(iter(configs['phases']), desc='phase'):
+
+                M = metrics[phase]
                 model.train(phase == 'train')
+
                 if phase == 'valid':
                     model.eval()
+
                 dataloader = dataloaders[group][phase]
                 len_dataloader = len(dataloader)
                 i = 0
+
                 for img, seg_label, dlab in tracker(dataloader, desc='batch'):
 
                     n = img.size(0)
-
                     p = float(i + epoch * len_dataloader) / N / len_dataloader
                     grad_reversal_coef = configs['grad_reversal_coef'] / (1. + np.exp(-configs['grad_reversal_growth'] * p)) - 1
 
@@ -107,14 +112,14 @@ def train(**kwargs):
                     M['labeled_source'] += is_source.sum().item()
                     M['labeled_target'] += is_target.sum().item()
 
-                    if group == 'balanced':
+                    if group == 'all_source' or segmentation_warmup:
+                        seg_pred = model(img, grad_reversal_coef, seg_only=True)
+                        err = F_seg_loss(seg_pred, seg_label)
+                    elif group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                         if configs['blind_target']:
                             seg_label = (is_source * seg_label) + (is_target * seg_pred)
                         err = F_seg_loss(seg_pred, seg_label) +  F_domain_loss(domain_pred, domain_label)
-                    elif group == 'all_source':
-                        seg_pred = model(img, grad_reversal_coef, seg_only=True)
-                        err = F_seg_loss(seg_pred, seg_label)
 
                     if phase == 'train':
                         err.backward()
@@ -136,24 +141,26 @@ def train(**kwargs):
                         log('Domain Acc', safe_div(M['running_domain_acc'], M['balanced_sample_count']))
                         log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
 
+                # computing mean_discrepancy
+                source_sample = random_sample(kMRI(phase, balanced=False, group='source'), configs['MDD_sample_size'])
+                target_sample = random_sample(kMRI(phase, balanced=False, group='target'), configs['MDD_sample_size'])
+                M['epoch_mean_discrepancy'] = model.feature_MDD(source_sample, target_sample)
+
+                M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
+                M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
+                M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
+
+                pprint(M)
                 torch.cuda.empty_cache()
-
-                if phase == 'train':
-                    with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}-{group}.pt'), 'wb+') as f:
-                            torch.save({
-                                        'epoch': epoch,
-                                        'phase': phase,
-                                        'groups': groups,
-                                        'metrics': metrics,
-                                        'configs': configs,
-                                        'model_state_dict': model.state_dict(),
-                                        'optimizer_state_dict': optimizer.state_dict(),
-                                        }, f)
-
                 gc.collect()
 
-            M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
-            M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
-            M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
-
-            pprint(M)
+            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}-{group}.pt'), 'wb+') as f:
+                torch.save({
+                            'epoch': epoch,
+                            'phase': phase,
+                            'groups': groups,
+                            'metrics': metrics,
+                            'configs': configs,
+                            'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict(),
+                            }, f)

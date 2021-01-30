@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from model import DAVNet2D
 import pickle
+from torch.utils.data import DataLoader
 
 def batch_flatten(X):
     return X.view(X.size(0), -1)
@@ -46,9 +47,10 @@ default_configs = {
     'grad_reversal_coef': 2,
     'grad_reversal_growth': 10,
     'blind_target': False,
-    'all_source_epoch': 20,
+    'warmup_length': 20,
     'checkpoint': None,
     'log_frequency': None,
+    'MDD_sample_size': 100,
 }
 
 models = {
@@ -71,10 +73,13 @@ phase_counter = {
 all_metrics = ['sample_count', 'balanced_sample_count', 'running_domain_loss',
     'running_domain_acc', 'running_seg_loss', 'labeled_source', 'labeled_target',
     'pred_source', 'pred_target',  'epoch_domain_loss', 'epoch_domain_acc', 'epoch_seg_loss',
-    'running_per_class_loss']
+    'running_per_class_loss', 'mean_discrepancy']
 
 def identity_tracker(x, **kwargs):
     return x
 
 def safe_div(x, y):
     return x if y == 0 else x / y
+
+def random_sample(dataset, N):
+    return next(DataLoader(dataset, batch_size=N, shuffle=True))

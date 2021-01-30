@@ -20,15 +20,19 @@ class DAVNet2D(nn.Module):
         nn.Module.__init__(self)
         self.feat = VNetDown()
         self.seg = VNetUp(classes)
-        self.disc = DomainClassifier()
+        self.disc = MultiFeatureDomainClassifier()
 
     def forward(self, x, grad_reversal_coef=1, seg_only=False):
         out16, out32, out64, out128, out256 = self.feat(x)
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        domain = self.disc(GradReversal.apply(out256, grad_reversal_coef))
+        domain = self.disc(MultiFeatureGradReversal.apply(out16, out32, out64, out128, out256, grad_reversal_coef))
         return seg, domain
+
+    def feature_MDD(self, source, target):
+        S, T = self.feat(source), self.feat(target)
+        return [torch.linalg.norm(s.view(s.size(0), -1).mean(0) - t.view(t.size(0), -1).mean(0)).item() for s, t in zip(S, T)]
 
 def sequential(x, funcs):
     for f in funcs:
@@ -36,9 +40,9 @@ def sequential(x, funcs):
     return x
 
 class DomainClassifier(nn.Module):
-    def __init__(self):
+    def __init__(self, input_size=24):
         super(DomainClassifier, self).__init__()
-        self.pool = nn.AvgPool2d(kernel_size=24, stride=1)
+        self.pool = nn.AvgPool2d(kernel_size=input_size, stride=1)
         self.fc1 = nn.Linear(256, 2048)
         self.bn1 = nn.BatchNorm1d(2048)
         self.relu1 = nn.ReLU(True)
@@ -50,6 +54,28 @@ class DomainClassifier(nn.Module):
 
     def forward(self, x):
         out = self.pool(x)
+        out = out.view(out.size(0), -1)
+        out = self.relu1(self.bn1(self.fc1(out)))
+        out = self.relu2(self.bn2(self.fc2(out)))
+        out = self.softmax(self.fc3(out).view(x.size(0), 2))
+        return out
+
+class MultiFeatureDomainClassifier(nn.Module):
+    def __init__(self, input_sizes=[344, 172, 86, 48, 24], total_channels=(256 + 128 + 64 + 32 + 16)):
+        super(MultiFeatureDomainClassifier, self).__init__()
+        self.pools = [nn.AvgPool2d(kernel_size=s, stride=1) for s in input_sizes]
+        self.fc1 = nn.Linear(total_channels, 2048)
+        self.bn1 = nn.BatchNorm1d(2048)
+        self.relu1 = nn.ReLU(True)
+        self.fc2 = nn.Linear(2048, 2048)
+        self.bn2 = nn.BatchNorm1d(2048)
+        self.relu2 = nn.ReLU(True)
+        self.fc3 = nn.Linear(2048, 2)
+        self.softmax = nn.LogSoftmax(dim=-1)
+
+    def forward(self, *args):
+        pooled = [self.pool(x).view(x.size(0), -1) for x in args]
+        out = torch.cat(pooled, 1) # concat along channels dimension
         out = out.view(out.size(0), -1)
         out = self.relu1(self.bn1(self.fc1(out)))
         out = self.relu2(self.bn2(self.fc2(out)))
@@ -201,6 +227,18 @@ class GradReversal(Function):
     def forward(ctx, x, alpha):
         ctx.alpha = alpha
         return x.view_as(x)
+
+    @staticmethod
+    def backward(ctx, grad_output):
+        output = grad_output.neg() * ctx.alpha
+        return output, None
+
+class MultiFeatureGradReversal(Function):
+
+    @staticmethod
+    def forward(ctx, out16, out32, out64, out128, out256, alpha):
+        ctx.alpha = alpha
+        return out16.view_as(out16), out32.view_as(out32), out64.view_as(out64), out128.view_as(out128), out256.view_as(out256)
 
     @staticmethod
     def backward(ctx, grad_output):
