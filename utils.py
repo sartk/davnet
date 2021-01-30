@@ -95,4 +95,5 @@ def safe_div(x, y):
     return x if y == 0 else x / y
 
 def random_sample(dataset, N):
-    return next(iter(DataLoader(dataset=dataset, batch_size=N, shuffle=True)))
+    img, seg, _ = next(iter(DataLoader(dataset=dataset, batch_size=N, shuffle=True)))
+    return img.cuda(), seg.cuda()
