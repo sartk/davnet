@@ -157,8 +157,7 @@ def train(**kwargs):
             with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}-{group}.pt'), 'wb+') as f:
                 torch.save({
                             'epoch': epoch,
-                            'phase': phase,
-                            'groups': groups,
+                            'group': group,
                             'metrics': metrics,
                             'configs': configs,
                             'model_state_dict': model.state_dict(),
