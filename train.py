@@ -122,7 +122,8 @@ def train(**kwargs):
                             seg_label = (is_source * seg_label) + (is_target * seg_pred)
                         seg_loss = F_seg_loss(seg_pred, seg_label)
                         domain_loss = F_domain_loss(domain_pred, domain_label)
-                        err = seg_loss + domain_loss
+                        err = seg_loss + domain_loss]
+                        s
 
                     if phase == 'train':
                         err.backward()
@@ -147,6 +148,8 @@ def train(**kwargs):
                 # computing mean_discrepancy
                 source_sample, source_seg, _ = random_sample(kMRI(phase, balanced=False, group='source'), configs['MDD_sample_size'])
                 target_sample, target_seg, _ = random_sample(kMRI(phase, balanced=False, group='target'), configs['MDD_sample_size'])
+
+                source_sample, source_seg, target_sample, target_seg = source_sample.cuda(), source_seg.cuda(), target_sample.cuda(), target_seg.cuda()
                 M['epoch_mean_discrepancy'] = model.feature_MDD(source_sample, target_sample)
 
                 M['source_per_class_dice'] = per_class_dice(model(source_sample), source_seg)
