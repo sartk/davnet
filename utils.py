@@ -8,14 +8,19 @@ from torch.utils.data import DataLoader
 def batch_flatten(X):
     return X.view(X.size(0), -1)
 
-def dice_loss_normal(Y_hat, Y, smooth=1e-10, flat=False):
+def batch_and_class_flatten(X):
+    return X.view(X.size(0), X.size(1), -1)
+
+def dice_loss_normal(Y_hat, Y, smooth=1e-10):
+    return (-torch.log(dice_score(Y_hat, Y, smooth))).sum(0)
+
+def dice_score(Y_hat, Y, smooth=1e-10, flat=False):
     assert Y_hat.size() == Y.size()
     if not flat:
         Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
-    intersection = (Y * Y_hat).sum(1)
-    union = Y.sum(1) + Y_hat.sum(1)
-    dice = (2 * intersection + smooth) / (union + smooth)
-    return (-torch.log(dice)).sum()
+    intersection = (Y * Y_hat).sum(-1)
+    union = Y.sum(-1) + Y_hat.sum(-1)
+    return (2 * intersection + smooth) / (union + smooth)
 
 def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
     assert Y_hat.size() == Y.size()
@@ -24,9 +29,13 @@ def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
         Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum()) ** exp)
     return dice_loss_normal(Y_hat, Y, smooth)
 
-def per_class_dice(Y_hat, Y):
+def per_class_dice(Y_hat, Y, tolist=True):
     assert Y_hat.size() == Y.size()
-    return ((Y * Y_hat).sum(-1).sum(-1) / (Y.sum(-1).sum(-1) + Y_hat.sum(-1).sum(-1))).mean(0).squeeze().tolist()
+    Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
+    dice = ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0).squeeze()
+    if tolist:
+        dice = dice.tolist()
+    return dice
 
 default_configs = {
     'balanced_batch_size': 8,
