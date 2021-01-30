@@ -32,7 +32,7 @@ def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
 def per_class_dice(Y_hat, Y, tolist=True):
     assert Y_hat.size() == Y.size()
     Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
-    dice = ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0).squeeze()
+    dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0).squeeze()
     if tolist:
         dice = dice.tolist()
     return dice
@@ -95,4 +95,4 @@ def safe_div(x, y):
     return x if y == 0 else x / y
 
 def random_sample(dataset, N):
-    return next(DataLoader(dataset=dataset, batch_size=N, shuffle=True))
+    return next(iter(DataLoader(dataset=dataset, batch_size=N, shuffle=True)))

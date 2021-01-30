@@ -125,7 +125,7 @@ def train(**kwargs):
                         err.backward()
                         optimizer.step()
 
-                    if group == 'balanced':
+                    if not segmentation_warmup and group == 'balanced':
                         M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label).sum().item()
                         M['balanced_sample_count'] += n
                         M['running_domain_loss'] += (domain_loss * n).item()
