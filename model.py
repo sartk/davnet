@@ -73,8 +73,8 @@ class MultiFeatureDomainClassifier(nn.Module):
         self.fc3 = nn.Linear(2048, 2)
         self.softmax = nn.LogSoftmax(dim=-1)
 
-    def forward(self, *args):
-        pooled = [self.pool(x).view(x.size(0), -1) for x in args]
+    def forward(self, *feats):
+        pooled = [self.pool(f).view(f.size(0), -1) for f, pool in zip(feats, pools)]
         out = torch.cat(pooled, 1) # concat along channels dimension
         out = out.view(out.size(0), -1)
         out = self.relu1(self.bn1(self.fc1(out)))
