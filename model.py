@@ -29,9 +29,9 @@ class DAVNet2D(nn.Module):
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        features = torch.cat((self.pool[0](out16).view(b, -1), self.pool[1](out32.view(b, -1)),
-                            self.pool[2](out64.view(b, -1)), self.pool[3](out128.view(b, -1)),
-                            self.pool[4](out256.view(b, -1))), 1)
+        features = torch.cat((self.pool[0](out16).view(b, -1), self.pool[1](out32).view(b, -1),
+                            self.pool[2](out64).view(b, -1), self.pool[3](out128).view(b, -1),
+                            self.pool[4](out256).view(b, -1)), 1)
         domain = self.disc(GradReversal.apply(features, grad_reversal_coef))
         return seg, domain
 
