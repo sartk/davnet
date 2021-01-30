@@ -142,9 +142,12 @@ def train(**kwargs):
                         log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
 
                 # computing mean_discrepancy
-                source_sample = random_sample(kMRI(phase, balanced=False, group='source'), configs['MDD_sample_size'])
-                target_sample = random_sample(kMRI(phase, balanced=False, group='target'), configs['MDD_sample_size'])
+                source_sample, source_seg, _ = random_sample(kMRI(phase, balanced=False, group='source'), configs['MDD_sample_size'])
+                target_sample, target_seg, _ = random_sample(kMRI(phase, balanced=False, group='target'), configs['MDD_sample_size'])
                 M['epoch_mean_discrepancy'] = model.feature_MDD(source_sample, target_sample)
+
+                M['source_per_class_dice'] = per_class_dice(model(source_sample), source_seg)
+                M['target_per_class_dice'] = per_class_dice(model(target_sample), target_seg)
 
                 M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
                 M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])

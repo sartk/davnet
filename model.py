@@ -20,15 +20,19 @@ class DAVNet2D(nn.Module):
         nn.Module.__init__(self)
         self.feat = VNetDown()
         self.seg = VNetUp(classes)
-        self.disc = MultiFeatureDomainClassifier()
-        self.pools = [nn.AvgPool2d(kernel_size=s, stride=1) for s in input_sizes]
+        self.disc = DomainClassifier(num_channels=(16 + 32 + 64 + 128 + 256))
+        self.pool = [nn.AvgPool2d(kernel_size=s, stride=1) for s in [344, 172, 86, 48, 24]]
 
     def forward(self, x, grad_reversal_coef=1, seg_only=False):
+        b = x.size(0)
         out16, out32, out64, out128, out256 = self.feat(x)
         seg = self.seg(out16, out32, out64, out128, out256)
         if seg_only:
             return seg
-        domain = self.disc(MultiFeatureGradReversal.apply(out16, out32, out64, out128, out256, grad_reversal_coef))
+        features = torch.cat((self.pool[0](out16).view(b, -1), self.pool[1](out32.view(b, -1)),
+                            self.pool[2](out64.view(b, -1)), self.pool[3](out128.view(b, -1)),
+                            self.pool[4](out256.view(b, -1))), 1)
+        domain = self.disc(GradReversal.apply(features, grad_reversal_coef))
         return seg, domain
 
     def feature_MDD(self, source, target):
@@ -41,10 +45,9 @@ def sequential(x, funcs):
     return x
 
 class DomainClassifier(nn.Module):
-    def __init__(self, input_size=24):
+    def __init__(self, num_channels=256):
         super(DomainClassifier, self).__init__()
-        self.pool = nn.AvgPool2d(kernel_size=input_size, stride=1)
-        self.fc1 = nn.Linear(256, 2048)
+        self.fc1 = nn.Linear(num_channels, 2048)
         self.bn1 = nn.BatchNorm1d(2048)
         self.relu1 = nn.ReLU(True)
         self.fc2 = nn.Linear(2048, 2048)
@@ -57,24 +60,6 @@ class DomainClassifier(nn.Module):
         out = self.pool(x)
         out = out.view(out.size(0), -1)
         out = self.relu1(self.bn1(self.fc1(out)))
-        out = self.relu2(self.bn2(self.fc2(out)))
-        out = self.softmax(self.fc3(out).view(x.size(0), 2))
-        return out
-
-class MultiFeatureDomainClassifier(nn.Module):
-    def __init__(self, input_sizes=[344, 172, 86, 48, 24], total_channels=(256 + 128 + 64 + 32 + 16)):
-        super(MultiFeatureDomainClassifier, self).__init__()
-        self.fc1 = nn.Linear(total_channels, 2048)
-        self.bn1 = nn.BatchNorm1d(2048)
-        self.relu1 = nn.ReLU(True)
-        self.fc2 = nn.Linear(2048, 2048)
-        self.bn2 = nn.BatchNorm1d(2048)
-        self.relu2 = nn.ReLU(True)
-        self.fc3 = nn.Linear(2048, 2)
-        self.softmax = nn.LogSoftmax(dim=-1)
-
-    def forward(self, x):
-        out = self.relu1(self.bn1(self.fc1(x)))
         out = self.relu2(self.bn2(self.fc2(out)))
         out = self.softmax(self.fc3(out).view(x.size(0), 2))
         return out

@@ -8,7 +8,7 @@ Function that does the global average pooling, and automatically detects the ker
 - Memory Loss - if this gets fixed: good
     - if it doesn't get fixed: split all_source across multiple epochs?
 
-- Per class dice as a metric
+- Per class dice as a metric - done
 
 - Segmentation warm up (refer Kamnitsas) - done
 

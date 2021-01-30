@@ -24,6 +24,10 @@ def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
         Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum()) ** exp)
     return dice_loss_normal(Y_hat, Y, smooth)
 
+def per_class_dice(Y_hat, Y):
+    assert Y_hat.size() == Y.size()
+    return ((Y * Y_hat).sum(-1).sum(-1) / (Y.sum(-1).sum(-1) + Y_hat.sum(-1).sum(-1))).mean(0).squeeze().tolist()
+
 default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 32,
