@@ -5,7 +5,6 @@ from torch.autograd import Function
 import numpy as np
 from torchvision import models
 from torchsummary import summary
-from torch import linalg as LA
 
 def model_summary():
     summary(DAVNet2D(), (1, 344, 344))
@@ -38,7 +37,7 @@ class DAVNet2D(nn.Module):
 
     def feature_MDD(self, source, target):
         S, T = self.feat(source), self.feat(target)
-        return [LA.norm(s.view(s.size(0), -1).mean(0) - t.view(t.size(0), -1).mean(0)).item() for s, t in zip(S, T)]
+        return [torch.norm(s.view(s.size(0), -1).mean(0) - t.view(t.size(0), -1).mean(0)).item() for s, t in zip(S, T)]
 
 def sequential(x, funcs):
     for f in funcs:
