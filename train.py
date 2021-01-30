@@ -129,9 +129,9 @@ def train(**kwargs):
                         M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label).sum().item()
                         M['balanced_sample_count'] += n
                         M['running_domain_loss'] += (domain_loss * n).item()
-
-                    M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
-                    M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
+                        M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
+                        M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
+                    
                     M['sample_count'] += n
                     M['running_seg_loss'] += seg_loss.item()
                     i += 1
