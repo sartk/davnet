@@ -122,9 +122,8 @@ def train(**kwargs):
                             seg_label = (is_source * seg_label) + (is_target * seg_pred)
                         seg_loss = F_seg_loss(seg_pred, seg_label)
                         domain_loss = F_domain_loss(domain_pred, domain_label)
-                        err = seg_loss + domain_loss]
-                        s
-
+                        err = seg_loss + domain_loss
+                    
                     if phase == 'train':
                         err.backward()
                         optimizer.step()
