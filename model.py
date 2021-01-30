@@ -21,6 +21,7 @@ class DAVNet2D(nn.Module):
         self.feat = VNetDown()
         self.seg = VNetUp(classes)
         self.disc = MultiFeatureDomainClassifier()
+        self.pools = [nn.AvgPool2d(kernel_size=s, stride=1) for s in input_sizes]
 
     def forward(self, x, grad_reversal_coef=1, seg_only=False):
         out16, out32, out64, out128, out256 = self.feat(x)
@@ -63,7 +64,6 @@ class DomainClassifier(nn.Module):
 class MultiFeatureDomainClassifier(nn.Module):
     def __init__(self, input_sizes=[344, 172, 86, 48, 24], total_channels=(256 + 128 + 64 + 32 + 16)):
         super(MultiFeatureDomainClassifier, self).__init__()
-        self.pools = [nn.AvgPool2d(kernel_size=s, stride=1) for s in input_sizes]
         self.fc1 = nn.Linear(total_channels, 2048)
         self.bn1 = nn.BatchNorm1d(2048)
         self.relu1 = nn.ReLU(True)
@@ -73,11 +73,8 @@ class MultiFeatureDomainClassifier(nn.Module):
         self.fc3 = nn.Linear(2048, 2)
         self.softmax = nn.LogSoftmax(dim=-1)
 
-    def forward(self, *feats):
-        pooled = [pool(f).view(f.size(0), -1) for f, pool in zip(feats, self.pools)]
-        out = torch.cat(pooled, 1) # concat along channels dimension
-        out = out.view(out.size(0), -1)
-        out = self.relu1(self.bn1(self.fc1(out)))
+    def forward(self, x):
+        out = self.relu1(self.bn1(self.fc1(x)))
         out = self.relu2(self.bn2(self.fc2(out)))
         out = self.softmax(self.fc3(out).view(x.size(0), 2))
         return out
