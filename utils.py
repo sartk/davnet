@@ -39,7 +39,7 @@ def per_class_dice(Y_hat, Y, tolist=True):
 
 default_configs = {
     'balanced_batch_size': 8,
-    'all_source_batch_size': 32,
+    'all_source_batch_size': 16,
     'learning_rate':  10e-5,
     'seg_loss': 'weighted_dice',
     'domain_loss': 'bce',
@@ -63,7 +63,7 @@ default_configs = {
     'warmup_length': 20,
     'checkpoint': None,
     'log_frequency': None,
-    'MDD_sample_size': 100,
+    'MDD_sample_size': 10,
 }
 
 models = {
