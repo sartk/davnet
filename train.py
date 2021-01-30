@@ -114,12 +114,15 @@ def train(**kwargs):
 
                     if group == 'all_source' or segmentation_warmup:
                         seg_pred = model(img, grad_reversal_coef, seg_only=True)
-                        err = F_seg_loss(seg_pred, seg_label)
+                        seg_loss = F_seg_loss(seg_pred, seg_label)
+                        err = seg_loss
                     elif group == 'balanced':
                         seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
                         if configs['blind_target']:
                             seg_label = (is_source * seg_label) + (is_target * seg_pred)
-                        err = F_seg_loss(seg_pred, seg_label) +  F_domain_loss(domain_pred, domain_label)
+                        seg_loss = F_seg_loss(seg_pred, seg_label)
+                        domain_loss = F_domain_loss(domain_pred, domain_label)
+                        err = seg_loss + domain_loss
 
                     if phase == 'train':
                         err.backward()
@@ -131,7 +134,7 @@ def train(**kwargs):
                         M['running_domain_loss'] += (domain_loss * n).item()
                         M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
                         M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
-                    
+
                     M['sample_count'] += n
                     M['running_seg_loss'] += seg_loss.item()
                     i += 1
