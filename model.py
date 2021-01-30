@@ -57,9 +57,7 @@ class DomainClassifier(nn.Module):
         self.softmax = nn.LogSoftmax(dim=-1)
 
     def forward(self, x):
-        out = self.pool(x)
-        out = out.view(out.size(0), -1)
-        out = self.relu1(self.bn1(self.fc1(out)))
+        out = self.relu1(self.bn1(self.fc1(x)))
         out = self.relu2(self.bn2(self.fc2(out)))
         out = self.softmax(self.fc3(out).view(x.size(0), 2))
         return out
