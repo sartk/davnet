@@ -150,8 +150,8 @@ def train(**kwargs):
 
                 M['epoch_mean_discrepancy'] = model.feature_MDD(source_sample, target_sample)
 
-                M['source_per_class_dice'] = per_class_dice(model(source_sample), source_seg)
-                M['target_per_class_dice'] = per_class_dice(model(target_sample), target_seg)
+                M['source_per_class_dice'] = per_class_dice(model(source_sample, seg_only=True), source_seg)
+                M['target_per_class_dice'] = per_class_dice(model(target_sample, seg_only=True), target_seg)
 
                 M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
                 M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
