@@ -213,19 +213,6 @@ class GradReversal(Function):
         output = grad_output.neg() * ctx.alpha
         return output, None
 
-class MultiFeatureGradReversal(Function):
-
-    @staticmethod
-    def forward(ctx, out16, out32, out64, out128, out256, alpha):
-        ctx.alpha = alpha
-        return out16.view_as(out16), out32.view_as(out32), out64.view_as(out64), out128.view_as(out128), out256.view_as(out256)
-
-    @staticmethod
-    def backward(ctx, grad_output):
-        output = grad_output.neg() * ctx.alpha
-        return output, None
-
-
 class VNetDown(nn.Module):
     # the number of convolutions in each layer corresponds
     # to what is in the actual prototxt, not the intent

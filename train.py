@@ -112,7 +112,7 @@ def train(**kwargs):
                     M['labeled_source'] += is_source.sum().item()
                     M['labeled_target'] += is_target.sum().item()
 
-                    if group == 'all_source' or segmentation_warmup:
+                    if group == 'all_source':
                         seg_pred = model(img, grad_reversal_coef, seg_only=True)
                         seg_loss = F_seg_loss(seg_pred, seg_label)
                         err = seg_loss
@@ -128,7 +128,7 @@ def train(**kwargs):
                         err.backward()
                         optimizer.step()
 
-                    if not segmentation_warmup and group == 'balanced':
+                    if group == 'balanced':
                         M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label).sum().item()
                         M['balanced_sample_count'] += n
                         M['running_domain_loss'] += (domain_loss * n).item()
