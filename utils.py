@@ -66,7 +66,7 @@ default_configs = {
     'checkpoint': None,
     'log_frequency': None,
     'MDD_sample_size': 10,
-    'domain_loss_weight': 0.5
+    'domain_loss_weight': 0.1
 }
 
 models = {
