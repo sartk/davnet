@@ -70,7 +70,7 @@ def train(**kwargs):
 
         if epoch == configs['warmup_length']:
             segmentation_warmup = False
-            groups.insert(0, 'all_source')
+            groups.append('all_source')
 
         metrics = {'train': {}, 'valid': {}}
         for phase in metrics:
