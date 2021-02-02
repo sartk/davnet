@@ -4,6 +4,8 @@ import torch.nn as nn
 from model import DAVNet2D
 import pickle
 from torch.utils.data import DataLoader
+import time
+from threading import Thread
 
 def batch_flatten(X):
     return X.view(X.size(0), -1)
@@ -22,7 +24,7 @@ def dice_score(Y_hat, Y, smooth=1e-10, flat=False):
     union = Y.sum(-1) + Y_hat.sum(-1)
     return (2 * intersection + smooth) / (union + smooth)
 
-def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
+def dice_loss_weighted(Y_hat, Y, exp=1.2, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     background_sum = Y[:, 0, :, :].sum()
     for i in range(Y.size(1)):
@@ -64,6 +66,7 @@ default_configs = {
     'checkpoint': None,
     'log_frequency': None,
     'MDD_sample_size': 10,
+    'domain_loss_weight': 0.5
 }
 
 models = {
@@ -97,3 +100,17 @@ def safe_div(x, y):
 def random_sample(dataset, N):
     img, seg, _ = next(iter(DataLoader(dataset=dataset, batch_size=N, shuffle=True)))
     return img.cuda(), seg.cuda()
+
+#from inputimeout import inputimeout, TimeoutOccurred
+
+def update_hyper_param(configs):
+    while needs_update():
+        param = input("Which parameter >>>")
+        new_value = input("Enter new value >>>")
+        eval("configs['{}'] = {}".format(param, new_value))
+
+def needs_update():
+    try:
+        return inputimeout(prompt='Need to update hyper params?', timeout=10).lower()[0] == 'y'
+    except TimeoutOccurred:
+        return False

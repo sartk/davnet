@@ -122,7 +122,7 @@ def train(**kwargs):
                             seg_label = (is_source * seg_label) + (is_target * seg_pred)
                         seg_loss = F_seg_loss(seg_pred, seg_label)
                         domain_loss = F_domain_loss(domain_pred, domain_label)
-                        err = seg_loss + domain_loss
+                        err = seg_loss + domain_loss * configs['domain_loss_weight']
 
                     if phase == 'train':
                         err.backward()
@@ -158,6 +158,7 @@ def train(**kwargs):
                 M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
 
                 pprint(M)
+                #update_hyper_param(configs)
                 torch.cuda.empty_cache()
                 gc.collect()
 
