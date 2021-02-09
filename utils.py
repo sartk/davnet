@@ -61,7 +61,7 @@ default_configs = {
     'patience': 5,
     'grad_reversal_coef': 2,
     'grad_reversal_growth': 10,
-    'blind_target': False,
+    'blind_target': True,
     'warmup_length': 20,
     'checkpoint': None,
     'log_frequency': None,

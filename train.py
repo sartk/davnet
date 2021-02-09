@@ -33,7 +33,7 @@ def train(**kwargs):
         }
     }
 
-    model = models[configs['model']](classes=configs['classes'])
+    model = models[configs['model']](classes=configs['classes'], disc_in=[3, 4, 5, 6])
     data_type = torch.HalfTensor if configs['half_precision'] else torch.FloatTensor
 
     if configs['half_precision']:
@@ -63,14 +63,14 @@ def train(**kwargs):
 
     best_valid_loss = {'seg': np.inf, 'domain': np.inf}
     patience_counter = 0
-    groups = ['balanced']
+    groups = ['all_source']
     segmentation_warmup = True
 
     for epoch in tracker(range(N), desc='epoch'):
 
         if epoch == configs['warmup_length']:
             segmentation_warmup = False
-            groups.append('all_source')
+            groups.append('balanced')
 
         metrics = {'train': {}, 'valid': {}}
         for phase in metrics:
@@ -114,29 +114,22 @@ def train(**kwargs):
 
                     if group == 'all_source':
                         seg_pred = model(img, grad_reversal_coef, seg_only=True)
-                        seg_loss = F_seg_loss(seg_pred, seg_label)
-                        err = seg_loss
+                        err = F_seg_loss(seg_pred, seg_label)
+                        M['running_seg_loss'] += err.item()
                     elif group == 'balanced':
-                        seg_pred, domain_pred = model(img, grad_reversal_coef, seg_only=False)
-                        if configs['blind_target']:
-                            seg_label = (is_source * seg_label) + (is_target * seg_pred)
-                        seg_loss = F_seg_loss(seg_pred, seg_label)
-                        domain_loss = F_domain_loss(domain_pred, domain_label)
-                        err = seg_loss + domain_loss * configs['domain_loss_weight']
+                        _, domain_pred = model(img, grad_reversal_coef, seg_only=False)
+                        err = F_domain_loss(domain_pred, domain_label)
+                        M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label).sum().item()
+                        M['balanced_sample_count'] += n
+                        M['running_domain_loss'] += (err * n).item()
+                        M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
+                        M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
 
                     if phase == 'train':
                         err.backward()
                         optimizer.step()
 
-                    if group == 'balanced':
-                        M['running_domain_acc'] += (domain_pred.argmax(1) == domain_label).sum().item()
-                        M['balanced_sample_count'] += n
-                        M['running_domain_loss'] += (domain_loss * n).item()
-                        M['pred_source'] += (domain_pred.argmax(1) == 0).sum().item()
-                        M['pred_target'] += (domain_pred.argmax(1) == 1).sum().item()
-
                     M['sample_count'] += n
-                    M['running_seg_loss'] += seg_loss.item()
                     i += 1
 
                     if configs['log_frequency'] and i % configs['log_frequency'] == 0:
@@ -149,10 +142,8 @@ def train(**kwargs):
                 target_sample, target_seg = random_sample(kMRI(phase, balanced=False, group='target'), configs['MDD_sample_size'])
 
                 M['epoch_mean_discrepancy'] = model.feature_MDD(source_sample, target_sample)
-
                 M['source_per_class_dice'] = per_class_dice(model(source_sample, seg_only=True), source_seg)
                 M['target_per_class_dice'] = per_class_dice(model(target_sample, seg_only=True), target_seg)
-
                 M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
                 M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
                 M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])

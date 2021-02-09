@@ -16,23 +16,33 @@ def toy_fwd(n=1):
 
 class DAVNet2D(nn.Module):
 
-    def __init__(self, classes=4):
+    def __init__(self, classes=4, disc_in=[0, 1, 2, 3, 4, 5, 6, 7, 8]):
         nn.Module.__init__(self)
-        self.feat = VNetDown()
-        self.seg = VNetUp(classes)
-        self.disc = DomainClassifier(num_channels=(16 + 32 + 64 + 128 + 256))
-        self.pool = [nn.AvgPool2d(kernel_size=s, stride=1) for s in [344, 172, 86, 48, 24]]
+        self.down = VNetDown()
+        self.up = VNetUp(classes)
+
+        C = [16, 32, 64, 128, 256, 256, 128, 64, 32]
+        S = [344, 172, 86, 48, 24, 48, 86, 172, 344]
+        self.disc = DomainClassifier(num_channels=sum([C[i] for i in disc_in]))
+        self.pool = [nn.AvgPool2d(kernel_size=s, stride=1) if i in disc_in else None
+                                    for i, s in enumerate(S)]
+        self.disc_in = disc_in
 
     def forward(self, x, grad_reversal_coef=1, seg_only=False):
+
         b = x.size(0)
-        out16, out32, out64, out128, out256 = self.feat(x)
-        seg = self.seg(out16, out32, out64, out128, out256)
-        if seg_only:
+        encoder_x = self.down(x)
+        decoder_x = self.up(encoder_x[0], encoder_x[1], encoder_x[2], encoder_x[3], encoder_x[4])
+        seg = decoder_x[-1]
+
+        if (not self.training) or seg_only:
             return seg
-        features = torch.cat((self.pool[0](out16).view(b, -1), self.pool[1](out32).view(b, -1),
-                            self.pool[2](out64).view(b, -1), self.pool[3](out128).view(b, -1),
-                            self.pool[4](out256).view(b, -1)), 1)
-        domain = self.disc(GradReversal.apply(features, grad_reversal_coef))
+
+        F = encoder_x + decoder_x
+        x = [self.pool[i](F[i]).view(b, -1) for i in self.disc_in]
+        x = torch.cat(x, 1)
+        domain = self.disc(GradReversal.apply(x, grad_reversal_coef))
+
         return seg, domain
 
     def feature_MDD(self, source, target):
@@ -128,7 +138,7 @@ class InputTransition(nn.Module):
         # do we want a PRELU here as well?
         out = self.bn1(self.conv1(x))
         # split input in to 16 channels
-        x_rep = torch.cat([x] * self.out_channels, 1)
+        x_rep = x.repeat(1, self.out_channels, 1, 1)
         out = self.relu1(torch.add(out, x_rep))
         return out
 
@@ -241,10 +251,10 @@ class VNetUp(nn.Module):
         self.up_tr32 = UpTransition(64, 32, 1, pad_up(172, 344, 2, 2), elu)
         self.out_tr = OutputTransition(32, num_channels, elu, nll)
 
-    def forward(self, out16, out32, out64, out128, out256):
-        out = self.up_tr256(out256,out128)
-        out = self.up_tr128(out, out64)
-        out = self.up_tr64(out, out32)
-        out = self.up_tr32(out, out16)
-        out = self.out_tr(out)
-        return out
+    def forward(self, in16, in32, in64, in128, in256):
+        out256 = self.up_tr256(in256, in128)
+        out128 = self.up_tr128(out256, in64)
+        out64 = self.up_tr64(out128, in32)
+        out32 = self.up_tr32(out64, in16)
+        seg = self.out_tr(out32)
+        return out256, out128, out64, out32, seg

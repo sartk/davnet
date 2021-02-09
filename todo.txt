@@ -1,5 +1,19 @@
 Things to work on before next meeting
 
+* Blind target segmentations in training (unsupervised)
+* Try the domain classifier on decoder
+* 
+
+
+input image ---> vnet encoder (domain) --->  vnet decoder ---> seg
+
+input image ---> vnet encoder  --->  vn (domain) et (domain) de (domain) coder ---> seg
+
+input layers (self supervised task (like edge detection)) ---> vnet encoder (domain) --->  vnet decoder ---> seg
+
+
+
+"""
 * Discriminator on all intermediate features
 Function that does the global average pooling, and automatically detects the kernel size. - done
 
@@ -16,3 +30,4 @@ Function that does the global average pooling, and automatically detects the ker
 
 - Maximum density divergence (if anything is applicable in our problem)
  refer https://github.com/orobix/mdd-domain-adaptation/blob/master/docs/imgs/atm.jpg
+"""
