@@ -84,7 +84,7 @@ def train(**kwargs):
             a = dataloaders['all_source'][phase]
             len_dataloader = len(a)
             b = cycle([(None, None, None)] if warmup else dataloaders['balanced'][phase])
-            iterator = tracker(zip(a, b), desc='batch')
+            iterator = tracker(zip(a, b), desc='batch', total=len_dataloader)
 
             for ((img_a, seg_label, _), (img_b, _, dlab)) in iterator:
 
