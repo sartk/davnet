@@ -66,7 +66,8 @@ default_configs = {
     'checkpoint': None,
     'log_frequency': None,
     'MDD_sample_size': 10,
-    'domain_loss_weight': 0.1
+    'domain_loss_weight': 0.1,
+    'disc_in': [3, 4, 5, 6]
 }
 
 models = {
@@ -87,7 +88,7 @@ phase_counter = {
 }
 
 all_metrics = ['sample_count', 'balanced_sample_count', 'running_domain_loss',
-    'running_domain_acc', 'running_seg_loss', 'labeled_source', 'labeled_target',
+    'running_domain_acc', 'running_seg_loss',
     'pred_source', 'pred_target',  'epoch_domain_loss', 'epoch_domain_acc', 'epoch_seg_loss',
     'running_per_class_loss', 'mean_discrepancy']
 
