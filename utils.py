@@ -28,7 +28,7 @@ def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     background_sum = Y[:, 0, :, :].sum()
     for i in range(Y.size(1)):
-        Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum()) ** exp)
+        Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum(), 1) ** exp)
     return dice_loss_normal(Y_hat, Y, smooth)
 
 def per_class_dice(Y_hat, Y, tolist=True):
@@ -99,8 +99,8 @@ all_metrics = ['sample_count', 'balanced_sample_count', 'running_domain_loss',
 def identity_tracker(x, **kwargs):
     return x
 
-def safe_div(x, y):
-    return x if y == 0 else x / y
+def safe_div(x, y, default=0):
+    return default if y == 0 else x / y
 
 def random_sample(dataset, N):
     img, seg, _ = next(iter(DataLoader(dataset=dataset, batch_size=N, shuffle=True)))
