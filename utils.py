@@ -24,7 +24,7 @@ def dice_score(Y_hat, Y, smooth=1e-10, flat=False):
     union = Y.sum(-1) + Y_hat.sum(-1)
     return (2 * intersection + smooth) / (union + smooth)
 
-def dice_loss_weighted(Y_hat, Y, exp=1.2, smooth=1e-10):
+def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     background_sum = Y[:, 0, :, :].sum()
     for i in range(Y.size(1)):
@@ -39,11 +39,14 @@ def per_class_dice(Y_hat, Y, tolist=True):
         dice = dice.tolist()
     return dice
 
+def per_class_loss(Y_hat, Y):
+    return 1 - per_class_dice(Y_hat, Y, to_list=False).mean()
+
 default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 16,
     'learning_rate':  10e-5,
-    'seg_loss': 'weighted_dice',
+    'seg_loss': 'per_class_loss',
     'domain_loss': 'bce',
     'weight_decay': 1,
     'print_progress': True,
@@ -66,7 +69,7 @@ default_configs = {
     'checkpoint': None,
     'log_frequency': None,
     'MDD_sample_size': 10,
-    'domain_loss_weight': 0.1,
+    'domain_loss_weight': 1,
     'disc_in': [3, 4, 5, 6]
 }
 
@@ -77,7 +80,8 @@ models = {
 losses = {
     'dice': dice_loss_normal,
     'weighted_dice': dice_loss_weighted,
-    'bce': nn.NLLLoss()
+    'bce': nn.NLLLoss(),
+    'per_class_loss': per_class_loss
 }
 
 log = print
