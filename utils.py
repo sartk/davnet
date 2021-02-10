@@ -37,11 +37,10 @@ def per_class_dice(Y_hat, Y, tolist=True):
     dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0).squeeze()
     if tolist:
         dice = dice.tolist()
-    print(dice)
     return dice
 
 def per_class_loss(Y_hat, Y):
-    return 1 - per_class_dice(Y_hat, Y, tolist=False).mean()
+    return 1 - (per_class_dice(Y_hat, Y, tolist=False).sum() / 4)
 
 default_configs = {
     'balanced_batch_size': 8,
