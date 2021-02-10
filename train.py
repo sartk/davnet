@@ -88,7 +88,7 @@ def train(**kwargs):
 
             for ((img_a, seg_label, _), (img_b, _, dlab)) in iterator:
 
-                n = img.size(0)
+                n = img_a.size(0)
                 p = float(i + epoch * len_dataloader) / N / len_dataloader
                 grad_reversal_coef = configs['grad_reversal_coef'] / (1. + np.exp(-configs['grad_reversal_growth'] * p)) - 1
 
