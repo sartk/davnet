@@ -40,7 +40,7 @@ def per_class_dice(Y_hat, Y, tolist=True):
     return dice
 
 def per_class_loss(Y_hat, Y):
-    return 1 - per_class_dice(Y_hat, Y, to_list=False).mean()
+    return 1 - per_class_dice(Y_hat, Y, tolist=False).mean()
 
 default_configs = {
     'balanced_batch_size': 8,
