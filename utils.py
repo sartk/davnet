@@ -44,8 +44,8 @@ def per_class_loss(Y_hat, Y):
 
 default_configs = {
     'balanced_batch_size': 8,
-    'all_source_batch_size': 16,
-    'learning_rate':  10e-5,
+    'all_source_batch_size': 32,
+    'learning_rate':  13e-5,
     'seg_loss': 'per_class_loss',
     'domain_loss': 'bce',
     'weight_decay': 1,
