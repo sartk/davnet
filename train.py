@@ -162,4 +162,5 @@ def train(**kwargs):
                             'configs': configs,
                             'model_state_dict': model.state_dict(),
                             'optimizer_state_dict': optimizer.state_dict(),
+                            'architecture': str(model)
                             }, f)

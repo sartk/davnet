@@ -6,9 +6,6 @@ import numpy as np
 from torchvision import models
 from torchsummary import summary
 
-def model_summary():
-    summary(DAVNet2D(), (1, 344, 344))
-
 def toy_fwd(n=1):
     x = torch.rand(n, 1, 344, 344)
     model = DAVNet2D()
@@ -45,8 +42,9 @@ class DAVNet2D(nn.Module):
 
         return seg, domain
 
-    def __str__():
-
+    def __str__(self):
+        model_stats = summary(self, (1, 344, 344), verbose=0)
+        return str(model_stats)
 
     def feature_MDD(self, source, target):
         S, T = self.down(source), self.down(target)
