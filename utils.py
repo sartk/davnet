@@ -40,12 +40,15 @@ def per_class_dice(Y_hat, Y, tolist=True):
     return dice
 
 def per_class_loss(Y_hat, Y):
-    return 1 - (per_class_dice(Y_hat, Y, tolist=False).sum() / 4)
+    assert Y_hat.size() == Y.size()
+    Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
+    dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).sum()
+    return dice
 
 default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 32,
-    'learning_rate':  13e-5,
+    'learning_rate':  10e-5,
     'seg_loss': 'per_class_loss',
     'domain_loss': 'bce',
     'weight_decay': 1,
