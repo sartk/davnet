@@ -39,19 +39,6 @@ default_configs = {
     'disc_in': [3, 4, 5, 6]
 }
 
-models = {
-    'davnet2d': DAVNet2D
-}
-
-losses = {
-    'dice': dice_loss_normal,
-    'weighted_dice': dice_loss_weighted,
-    'bce': nn.NLLLoss(),
-    'per_class_loss': per_class_loss
-}
-
-log = print
-
 phase_counter = {
     'train': 0,
     'valid': 0
@@ -126,3 +113,17 @@ def needs_update():
         return inputimeout(prompt='Need to update hyper params?', timeout=10).lower()[0] == 'y'
     except TimeoutOccurred:
         return False
+
+
+models = {
+    'davnet2d': DAVNet2D
+}
+
+losses = {
+    'dice': dice_loss_normal,
+    'weighted_dice': dice_loss_weighted,
+    'bce': nn.NLLLoss(),
+    'per_class_loss': per_class_loss
+}
+
+log = print
