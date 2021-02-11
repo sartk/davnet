@@ -39,11 +39,11 @@ def per_class_dice(Y_hat, Y, tolist=True):
         dice = dice.tolist()
     return dice
 
-def per_class_loss(Y_hat, Y):
+def per_class_loss(Y_hat, Y, classes=default_configs['classes'], batch=default_configs['all_source_batch_size']):
     assert Y_hat.size() == Y.size()
     Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
     dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).sum()
-    return 1 - dice / (default_configs['all_source_batch_size'] * default_configs['classes'])
+    return 1 - dice / (classes * batch)
 
 default_configs = {
     'balanced_batch_size': 8,
@@ -105,9 +105,11 @@ def identity_tracker(x, **kwargs):
 def safe_div(x, y, default=0):
     return default if y == 0 else x / y
 
-def random_sample(dataset, N):
+def random_sample(dataset, N, cuda=False):
     img, seg, _ = next(iter(DataLoader(dataset=dataset, batch_size=N, shuffle=True)))
-    return img.cuda(), seg.cuda()
+    if cuda:
+        img, seg = img.cuda(), seg.cuda()
+    return img, seg
 
 #from inputimeout import inputimeout, TimeoutOccurred
 

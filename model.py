@@ -45,6 +45,9 @@ class DAVNet2D(nn.Module):
 
         return seg, domain
 
+    def __str__():
+
+
     def feature_MDD(self, source, target):
         S, T = self.down(source), self.down(target)
         return [torch.norm(s.view(s.size(0), -1).mean(0) - t.view(t.size(0), -1).mean(0)).item() for s, t in zip(S, T)]
