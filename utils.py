@@ -43,7 +43,7 @@ def per_class_loss(Y_hat, Y):
     assert Y_hat.size() == Y.size()
     Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
     dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).sum()
-    return dice
+    return 1 - dice / (default_configs['all_source_batch_size'] * default_configs['classes'])
 
 default_configs = {
     'balanced_batch_size': 8,

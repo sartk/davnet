@@ -18,13 +18,13 @@ class DAVNet2D(nn.Module):
 
     def __init__(self, classes=4, disc_in=[0, 1, 2, 3, 4, 5, 6, 7, 8]):
         nn.Module.__init__(self)
-        self.down = VNetDown()
-        self.up = VNetUp(classes)
+        self.down = nn.DataParallel(VNetDown())
+        self.up = nn.DataParallel(VNetUp(classes))
 
         C = [16, 32, 64, 128, 256, 256, 128, 64, 32]
         S = [344, 172, 86, 48, 24, 48, 86, 172, 344]
-        self.disc = DomainClassifier(num_channels=sum([C[i] for i in disc_in]))
-        self.pool = [nn.AvgPool2d(kernel_size=s, stride=1) if i in disc_in else None
+        self.disc = nn.DataParallel(DomainClassifier(num_channels=sum([C[i] for i in disc_in])))
+        self.pool = [nn.DataParallel(nn.AvgPool2d(kernel_size=s, stride=1)) if i in disc_in else None
                                     for i, s in enumerate(S)]
         self.disc_in = disc_in
 
