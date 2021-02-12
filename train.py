@@ -155,12 +155,12 @@ def train(**kwargs):
             torch.cuda.empty_cache()
             gc.collect()
 
-            with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'), 'wb+') as f:
-                torch.save({
-                            'epoch': epoch,
-                            'metrics': metrics,
-                            'configs': configs,
-                            'model_state_dict': model.state_dict(),
-                            'optimizer_state_dict': optimizer.state_dict(),
-                            'architecture': str(model)
-                            }, f)
+        with open(os.path.join(configs['checkpoint_dir'], f'{timestamp}-{epoch}.pt'), 'wb+') as f:
+            torch.save({
+                        'epoch': epoch,
+                        'metrics': metrics,
+                        'configs': configs,
+                        'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict(),
+                        'architecture': str(model)
+                        }, f)

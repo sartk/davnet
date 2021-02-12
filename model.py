@@ -43,8 +43,8 @@ class DAVNet2D(nn.Module):
         return seg, domain
 
     def __str__(self):
-        model_stats = summary(self, (1, 344, 344), verbose=0)
-        return str(model_stats)
+        #model_stats = summary(self, (1, 344, 344), verbose=0)
+        return ''
 
     def feature_MDD(self, source, target):
         S, T = self.down(source), self.down(target)
