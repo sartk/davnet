@@ -12,7 +12,7 @@ default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 32,
     'learning_rate':  30e-5,
-    'seg_loss': 'per_class_loss',
+    'seg_loss': 'weighted_dice',
     'domain_loss': 'bce',
     'weight_decay': 1,
     'print_progress': True,
@@ -67,7 +67,7 @@ def dice_score(Y_hat, Y, smooth=1e-10, flat=False):
     union = Y.sum(-1) + Y_hat.sum(-1)
     return (2 * intersection + smooth) / (union + smooth)
 
-def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
+def dice_loss_weighted(Y_hat, Y, exp=1, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     background_sum = Y[:, 0, :, :].sum()
     for i in range(Y.size(1)):
