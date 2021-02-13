@@ -13,7 +13,7 @@ checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
 model.eval()
 
-data = kMRI('valid', balanced=True, group='all')
+data = kMRI('train', balanced=False, group='source')
 
 while True:
     print()
