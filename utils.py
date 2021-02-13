@@ -72,7 +72,9 @@ def dice_loss_weighted(Y_hat, Y, exp=1, smooth=1e-10):
     background_sum = Y[:, 0, :, :].sum()
     for i in range(Y.size(1)):
         Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum(), 1) ** exp)
-    return dice_loss_normal(Y_hat, Y, smooth)
+    Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
+    dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0)
+    return 1 - dice
 
 def per_class_dice(Y_hat, Y, tolist=True):
     assert Y_hat.size() == Y.size()
