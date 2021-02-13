@@ -13,15 +13,19 @@ def toy_fwd(n=1):
 
 class DAVNet2D(nn.Module):
 
-    def __init__(self, classes=4, disc_in=[3, 4, 5, 6]):
+    def __init__(self, classes=4, disc_in=[3, 4, 5, 6], dp=True):
+        if dp:
+            dp = nn.DataParallel
+        else:
+            dp = lambda x: x
         nn.Module.__init__(self)
-        self.down = nn.DataParallel(VNetDown())
-        self.up = nn.DataParallel(VNetUp(classes))
+        self.down = dp(VNetDown())
+        self.up = dp(VNetUp(classes))
 
         C = [16, 32, 64, 128, 256, 256, 128, 64, 32]
         S = [344, 172, 86, 48, 24, 48, 86, 172, 344]
-        self.disc = nn.DataParallel(DomainClassifier(num_channels=sum([C[i] for i in disc_in])))
-        self.pool = [nn.DataParallel(nn.AvgPool2d(kernel_size=s, stride=1)) if i in disc_in else None
+        self.disc = dp(DomainClassifier(num_channels=sum([C[i] for i in disc_in])))
+        self.pool = [dp(nn.AvgPool2d(kernel_size=s, stride=1)) if i in disc_in else None
                                     for i, s in enumerate(S)]
         self.disc_in = disc_in
 
