@@ -24,9 +24,9 @@ while True:
     image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()
     with torch.no_grad():
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
-    image = image.view(344, 344).numpy()
-    seg_pred = seg_pred.view(-1, 344, 344).argmax(0).numpy()
-    segmentation = segmentation.view(-1, 344, 344).argmax(0).numpy()
+    image = image.view(344, 344).cpu().numpy()
+    seg_pred = seg_pred.view(-1, 344, 344).argmax(0).cpu().numpy()
+    segmentation = segmentation.view(-1, 344, 344).argmax(0).cpu().numpy()
     print("True Domain: {}, Predicted Domain: {}".format(domain, dom_pred))
     dom_pred = dom_pred.argmax(-1).view(-1)[0].item()
     domain = domain.view(-1)[0].item()
