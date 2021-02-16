@@ -41,4 +41,5 @@ while True:
     f.add_subplot(1,3, 3)
     plt.imshow(seg_pred)
 
-    plt.show(block=True)
+    plt.savefig('tmp.png')
+    print('File saved to tmp.png')
