@@ -7,9 +7,9 @@ import sys
 import os
 import torch
 
-model = DAVNet2D(4, dp=True)
 PATH = sys.argv[1]
 os.environ['CUDA_VISIBLE_DEVICES'] = sys.argv[2]
+model = DAVNet2D(4, dp=True).cuda()
 
 checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
@@ -21,6 +21,7 @@ while True:
     print()
     i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
     image, segmentation, domain = data[i]
+    image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()
     with torch.no_grad():
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
     image = image.view(344, 344).numpy()
