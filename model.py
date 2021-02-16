@@ -36,7 +36,7 @@ class DAVNet2D(nn.Module):
         decoder_x = self.up(encoder_x[0], encoder_x[1], encoder_x[2], encoder_x[3], encoder_x[4])
         seg = decoder_x[-1]
 
-        if (not self.training) or seg_only:
+        if seg_only:
             return seg
 
         F = encoder_x + decoder_x
