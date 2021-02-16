@@ -4,10 +4,12 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Colormap
 import numpy as np
 import sys
+import os
 import torch
 
-model = DAVNet2D(4, dp=False)
+model = DAVNet2D(4, dp=True)
 PATH = sys.argv[1]
+os.environ['CUDA_VISIBLE_DEVICES'] = sys.argv[2]
 
 checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
 model.load_state_dict(checkpoint['model_state_dict'])
