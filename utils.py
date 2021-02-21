@@ -37,7 +37,7 @@ default_configs = {
     'MDD_sample_size': 10,
     'domain_loss_weight': 1,
     'disc_in': [3, 4, 5, 6],
-    'valid_freq': 1000
+    'valid_freq': 10
 }
 
 phase_counter = {

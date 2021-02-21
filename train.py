@@ -150,6 +150,7 @@ def train(**kwargs):
                     log('MDD', MDD)
                     log('Source Valid Dice', source_dice)
                     log('Target Valid Dice', target_dice)
+                    break
 
             M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
             M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
