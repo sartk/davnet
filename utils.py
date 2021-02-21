@@ -139,10 +139,28 @@ def logger(timestamp, delim=','):
 source_ds = kMRI('valid', balanced=False, group='source')
 target_ds = kMRI('valid', balanced=False, group='target')
 
-def baseline(N, model):
-    source_sample, source_seg = random_sample(source_ds, N, cuda=True)
-    target_sample, target_seg = random_sample(target_ds, N, cuda=True)
+def baseline(N, model, cuda=True, num_classes=4):
+
+    batches = N // 16
+    dl = {
+        'source': DataLoader(dataset=source_ds, batch_size=16, shuffle=True),
+        'target': DataLoader(dataset=target_ds, batch_size=16, shuffle=True)
+    }
+    dice = {
+        'source': torch.zeros(num_classes).float(),
+        'target': torch.zeros(num_classes).float()
+    }
+
+    for _ in range(batches):
+        for group in ['source', 'target']:
+            for img, seg, _ in dl[group]:
+                if cuda:
+                    img, seg = img.cuda(), seg.cuda()
+                dice[group] += per_class_dice(model(img, seg_only=True), seg,
+                            classes=num_classes, batch=16, tolist=False).cpu()
+
+    source_sample, source_seg = random_sample(source_ds, 10, cuda=True)
+    target_sample, target_seg = random_sample(target_ds, 10, cuda=True)
     mdd = model.feature_MDD(source_sample, target_sample)
-    source_dice = per_class_dice(model(source_sample, seg_only=True), source_seg)
-    target_dice = per_class_dice(model(target_sample, seg_only=True), target_seg)
-    return mdd, source_dice, target_dice
+
+    return mdd, (dice['source']/batches).tolist(), (dice['target']/batches).tolist()
