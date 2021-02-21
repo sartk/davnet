@@ -12,7 +12,7 @@ default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 16,
     'learning_rate':  10e-5,
-    'seg_loss': 'dice_loss_weighted',
+    'seg_loss': 'weighted_dice',
     'domain_loss': 'bce',
     'weight_decay': 1,
     'print_progress': True,
