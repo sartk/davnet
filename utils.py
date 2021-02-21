@@ -158,6 +158,6 @@ def baseline(N, model, cuda=True, num_classes=4):
                 img, seg = img.cuda(), seg.cuda()
             new_dice = per_class_dice(model(img, seg_only=True), seg,
                 tolist=True)
-            dice = [d + n for d, n in zip(dice, new_dice)]
+            dice[group] = [d + n for d, n in zip(dice[group], new_dice)]
 
     return [d / batches for d in dice['source']], [d / batches for d in dice['target']]
