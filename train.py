@@ -98,7 +98,6 @@ def train(**kwargs):
                     source_dice, target_dice = baseline(100, model)
                     log('Source Valid Dice', source_dice)
                     log('Target Valid Dice', target_dice)
-                    break
 
                 n = img_a.size(0)
                 p = float(i + epoch * len_dataloader) / N / len_dataloader
