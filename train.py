@@ -93,6 +93,14 @@ def train(**kwargs):
 
             for ((img_a, seg_label, _), (img_b, _, dlab)) in iterator:
 
+                if configs['valid_freq'] and i % configs['valid_freq'] == 0:
+                    log(f'\nPeriodic Validation on Epoch {epoch}, Iteration {i}')
+                    source_dice, target_dice = baseline(100, model)
+                    log('MDD', MDD)
+                    log('Source Valid Dice', source_dice)
+                    log('Target Valid Dice', target_dice)
+                    break
+
                 n = img_a.size(0)
                 p = float(i + epoch * len_dataloader) / N / len_dataloader
                 grad_reversal_coef = configs['grad_reversal_coef'] / (1. + np.exp(-configs['grad_reversal_growth'] * p)) - 1
@@ -143,22 +151,6 @@ def train(**kwargs):
                     log('Domain Loss',  safe_div(M['running_domain_loss'], M['balanced_sample_count']))
                     log('Domain Acc', safe_div(M['running_domain_acc'], M['balanced_sample_count']))
                     log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
-
-                if configs['valid_freq'] and i % configs['valid_freq'] == 0:
-                    del img
-                    del seg
-                    del img_a
-                    del img_b
-                    del seg_label
-                    del domain_label
-                    del dlab
-                    del _
-                    log(f'\nPeriodic Validation on Epoch {epoch}, Iteration {i}')
-                    source_dice, target_dice = baseline(100, model)
-                    log('MDD', MDD)
-                    log('Source Valid Dice', source_dice)
-                    log('Target Valid Dice', target_dice)
-                    break
 
             M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
             M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
