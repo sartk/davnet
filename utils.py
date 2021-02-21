@@ -12,8 +12,8 @@ default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 16,
     'learning_rate':  10e-5,
-    'seg_loss': 'per_class_loss',
-    'domain_loss': 'bce',
+    'seg_loss': 'dice',
+    'domain_loss': 'nll',
     'weight_decay': 1,
     'print_progress': True,
     'model': 'davnet2d',
@@ -38,7 +38,8 @@ default_configs = {
     'domain_loss_weight': 1,
     'disc_in': [3, 4, 5, 6],
     'valid_freq': 1000,
-    'message': ''
+    'message': '',
+    'dice_weights': None
 }
 
 phase_counter = {
@@ -52,43 +53,109 @@ all_metrics = ['sample_count', 'balanced_sample_count', 'running_domain_loss',
     'running_per_class_loss', 'mean_discrepancy']
 
 
-def batch_flatten(X):
-    return X.view(X.size(0), -1)
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
-def batch_and_class_flatten(X):
-    return X.view(X.size(0), X.size(1), -1)
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
 
-def dice_loss_normal(Y_hat, Y, smooth=1e-10):
-    return (-torch.log(dice_score(Y_hat, Y, smooth))).sum(0)
 
-def dice_score(Y_hat, Y, smooth=1e-10, flat=False):
-    assert Y_hat.size() == Y.size()
-    if not flat:
-        Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
-    intersection = (Y * Y_hat).sum(-1)
-    union = Y.sum(-1) + Y_hat.sum(-1)
-    return (2 * intersection + smooth) / (union + smooth)
+#github: @hubutui
+def make_one_hot(input, num_classes):
+    """Convert class index tensor to one hot encoding tensor.
+    Args:
+         input: A tensor of shape [N, 1, *]
+         num_classes: An int of number of class
+    Returns:
+        A tensor of shape [N, num_classes, *]
+    """
+    shape = np.array(input.shape)
+    shape[1] = num_classes
+    shape = tuple(shape)
+    result = torch.zeros(shape)
+    result = result.scatter_(1, input.cpu(), 1)
 
-def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
-    assert Y_hat.size() == Y.size()
-    background_sum = Y[:, 0, :, :].sum()
-    for i in range(Y.size(1)):
-        Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum(), 1) ** exp)
-    return dice_loss_normal(Y_hat, Y)
+    return result
 
-def per_class_dice(Y_hat, Y, tolist=True):
-    assert Y_hat.size() == Y.size()
-    Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
-    dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0).squeeze()
-    if tolist:
-        dice = dice.tolist()
-    return dice
+#github: @hubutui
+class BinaryDiceLoss(nn.Module):
+    """Dice loss of binary class
+    Args:
+        smooth: A float number to smooth loss, and avoid NaN error, default: 1
+        p: Denominator value: \sum{x^p} + \sum{y^p}, default: 2
+        predict: A tensor of shape [N, *]
+        target: A tensor of shape same with predict
+        reduction: Reduction method to apply, return mean over batch if 'mean',
+            return sum if 'sum', return a tensor of shape [N,] if 'none'
+    Returns:
+        Loss tensor according to arg reduction
+    Raise:
+        Exception if unexpected reduction
+    """
+    def __init__(self, smooth=0.1, p=2, reduction='mean', representation='-log'):
+        super(BinaryDiceLoss, self).__init__()
+        self.smooth = smooth
+        self.p = p
+        self.reduction = reduction
 
-def per_class_loss(Y_hat, Y, classes=default_configs['classes'], batch=default_configs['all_source_batch_size']):
-    assert Y_hat.size() == Y.size()
-    Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
-    dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).sum()
-    return 1 - dice / (classes * batch)
+    def forward(self, predict, target):
+        assert predict.shape[0] == target.shape[0], "predict & target batch size don't match"
+        predict = predict.contiguous().view(predict.shape[0], -1)
+        target = target.contiguous().view(target.shape[0], -1)
+
+        num = torch.sum(torch.mul(predict, target), dim=1) + self.smooth
+        den = torch.sum(predict.pow(self.p) + target.pow(self.p), dim=1) + self.smooth
+
+        if representation == '1-':
+            loss = 1 - num / den
+        elif representation == '-log':
+            loss = -torch.log(num / den)
+
+        if self.reduction == 'mean':
+            return loss.mean()
+        elif self.reduction == 'sum':
+            return loss.sum()
+        elif self.reduction == 'none':
+            return loss
+        else:
+            raise Exception('Unexpected reduction {}'.format(self.reduction))
+
+#github: @hubutui
+class DiceLoss(nn.Module):
+    """Dice loss, need one hot encode input
+    Args:
+        weight: An array of shape [num_classes,]
+        ignore_index: class index to ignore
+        predict: A tensor of shape [N, C, *]
+        target: A tensor of same shape with predict
+        other args pass to BinaryDiceLoss
+    Return:
+        same as BinaryDiceLoss
+    """
+    def __init__(self, weight=None, ignore_index=None, **kwargs):
+        super(DiceLoss, self).__init__()
+        self.kwargs = kwargs
+        self.weight = weight
+        self.ignore_index = ignore_index
+
+    def forward(self, predict, target):
+        assert predict.shape == target.shape, 'predict & target shape do not match'
+        dice = BinaryDiceLoss(**self.kwargs)
+        total_loss = 0
+        #predict = F.softmax(predict, dim=1)
+
+        for i in range(target.shape[1]):
+            if i != self.ignore_index:
+                dice_loss = dice(predict[:, i], target[:, i])
+                if self.weight is not None:
+                    assert self.weight.shape[0] == target.shape[1], \
+                        'Expect weight shape [{}], get[{}]'.format(target.shape[1], self.weight.shape[0])
+                    dice_loss *= self.weights[i]
+                total_loss += dice_loss
+
+        return total_loss/target.shape[1]
 
 def identity_tracker(x, **kwargs):
     return x
@@ -123,10 +190,7 @@ models = {
 }
 
 losses = {
-    'dice': dice_loss_normal,
-    'weighted_dice': dice_loss_weighted,
-    'bce': nn.NLLLoss(),
-    'per_class_loss': per_class_loss
+    'nll': nn.NLLLoss(),
 }
 
 def logger(timestamp, delim=','):
