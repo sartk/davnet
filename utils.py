@@ -152,7 +152,7 @@ def baseline(N, model, cuda=True, num_classes=4):
     }
 
     for group in ['source', 'target']:
-        for i in ranges(batches):
+        for i in range(batches):
             img, seg, _ = next(dl[group])
             if cuda:
                 img, seg = img.cuda(), seg.cuda()
