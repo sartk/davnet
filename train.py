@@ -93,7 +93,7 @@ def train(**kwargs):
 
             for ((img_a, seg_label, _), (img_b, _, dlab)) in iterator:
 
-                if configs['valid_freq'] and i % configs['valid_freq'] == 0:
+                if configs['valid_freq'] and (i + 1) % configs['valid_freq'] == 0:
                     log(f'\nPeriodic Validation on Epoch {epoch}, Iteration {i}')
                     source_dice, target_dice = baseline(100, model)
                     log('Source Valid Dice', source_dice)
@@ -155,7 +155,7 @@ def train(**kwargs):
             M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
             M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
 
-            pprint(M)
+            log(pprint.pformat(M, indent=4))
             torch.cuda.empty_cache()
             gc.collect()
 
