@@ -159,8 +159,8 @@ def baseline(N, model, cuda=True, num_classes=4):
                 dice[group] += per_class_dice(model(img, seg_only=True), seg,
                     tolist=False).cpu()
 
-    source_sample, source_seg = random_sample(source_ds, 10, cuda=True)
-    target_sample, target_seg = random_sample(target_ds, 10, cuda=True)
-    mdd = model.feature_MDD(source_sample, target_sample)
+    #source_sample, source_seg = random_sample(source_ds, 10, cuda=True)
+    #target_sample, target_seg = random_sample(target_ds, 10, cuda=True)
+    #mdd = model.feature_MDD(source_sample, target_sample)
 
-    return mdd, (dice['source']/batches).tolist(), (dice['target']/batches).tolist()
+    return (dice['source']/batches).tolist(), (dice['target']/batches).tolist()
