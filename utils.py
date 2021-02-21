@@ -184,7 +184,7 @@ def logger(timestamp, delim=','):
 
 source_ds = kMRI('valid', balanced=False, group='source')
 target_ds = kMRI('valid', balanced=False, group='target')
-dice = DiceLoss(repr='')
+dice_per_class = DiceLoss(repr='')
 
 def baseline(N, model, cuda=True, num_classes=4):
 
@@ -203,7 +203,7 @@ def baseline(N, model, cuda=True, num_classes=4):
             img, seg, _ = next(dl[group])
             if cuda:
                 img, seg = img.cuda(), seg.cuda()
-            new_dice = dice.forward(model(img, seg_only=True), seg, per_class=True)
+            new_dice = dice_per_class(model(img, seg_only=True), seg, per_class=True)
             dice[group] = [d + n for d, n in zip(dice[group], new_dice)]
 
     return [d / batches for d in dice['source']], [d / batches for d in dice['target']]
