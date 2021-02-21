@@ -22,6 +22,7 @@ def train(**kwargs):
     tracker = tqdm if configs['print_progress'] else identity_tracker
     os.environ['CUDA_VISIBLE_DEVICES'] = configs['CUDA_VISIBLE_DEVICES']
     timestamp = time.strftime("%Y%m%d-%H%M%S")
+    log = logger(timestamp)
     n = configs['num_workers']
     dataloaders = {
         'balanced': {
@@ -68,12 +69,16 @@ def train(**kwargs):
 
     for epoch in tracker(range(N), desc='epoch'):
 
+        log('\nEpoch', epoch)
+
         if epoch == configs['warmup_length']:
             warmup = False
 
         metrics = {'train': {}, 'valid': {}}
 
         for phase in metrics:
+
+            log('\nPhase', phase)
 
             for m in all_metrics:
                 metrics[phase][m] = 0
@@ -134,24 +139,23 @@ def train(**kwargs):
                 i += 1
 
                 if configs['log_frequency'] and i % configs['log_frequency'] == 0:
+                    log(f'\nPeriodic Log on Epoch {epoch}, Iteration {i}')
                     log('Domain Loss',  safe_div(M['running_domain_loss'], M['balanced_sample_count']))
                     log('Domain Acc', safe_div(M['running_domain_acc'], M['balanced_sample_count']))
                     log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
 
-            # computing mean_discrepancy
-            source_sample, source_seg = random_sample(kMRI(phase, balanced=False, group='source'), configs['MDD_sample_size'], cuda=True)
-            target_sample, target_seg = random_sample(kMRI(phase, balanced=False, group='target'), configs['MDD_sample_size'], cuda=True)
+                if configs['valid_freq'] and i % configs['valid_freq'] == 0:
+                    log(f'\nPeriodic Validation on Epoch {epoch}, Iteration {i}')
+                    MDD, source_dice, target_dice = baseline(100)
+                    log('MDD', MDD)
+                    log('Source Valid Dice', source_dice)
+                    log('Target Valid Dice', target_dice)
 
-
-            M['epoch_mean_discrepancy'] = model.feature_MDD(source_sample, target_sample)
-            M['source_per_class_dice'] = per_class_dice(model(source_sample, seg_only=True), source_seg)
-            M['target_per_class_dice'] = per_class_dice(model(target_sample, seg_only=True), target_seg)
             M['epoch_domain_loss'] = safe_div(M['running_domain_loss'], M['balanced_sample_count'])
             M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
             M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
 
             pprint(M)
-            #update_hyper_param(configs)
             torch.cuda.empty_cache()
             gc.collect()
 

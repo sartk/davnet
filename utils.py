@@ -33,10 +33,11 @@ default_configs = {
     'blind_target': True,
     'warmup_length': 20,
     'checkpoint': None,
-    'log_frequency': None,
+    'log_frequency': 100,
     'MDD_sample_size': 10,
     'domain_loss_weight': 1,
-    'disc_in': [3, 4, 5, 6]
+    'disc_in': [3, 4, 5, 6],
+    'valid_freq': 1000
 }
 
 phase_counter = {
@@ -95,6 +96,7 @@ def safe_div(x, y, default=0):
     return default if y == 0 else x / y
 
 def random_sample(dataset, N, cuda=False):
+
     img, seg, _ = next(iter(DataLoader(dataset=dataset, batch_size=N, shuffle=True)))
     if cuda:
         img, seg = img.cuda(), seg.cuda()
@@ -126,4 +128,21 @@ losses = {
     'per_class_loss': per_class_loss
 }
 
-log = print
+def logger(timestamp, delim=','):
+    def log(*args):
+        line = delim.join(*args)
+        with open('/data/bigbone6/skamat/checkpoints-davnet/logs/{timestamp}.log', 'a+') as f:
+            f.write(line)
+            f.write('\n')
+    return log
+
+source_ds = kMRI('valid', balanced=False, group='source')
+target_ds = kMRI('valid', balanced=False, group='target')
+
+def baseline(N):
+    source_sample, source_seg = random_sample(source_ds, N, cuda=True)
+    target_sample, target_seg = random_sample(target_ds, N, cuda=True)
+    mdd = model.feature_MDD(source_sample, target_sample)
+    source_dice = per_class_dice(model(source_sample, seg_only=True), source_seg)
+    target_dice = per_class_dice(model(target_sample, seg_only=True), target_seg)
+    return mdd, source_dice, target_dice
