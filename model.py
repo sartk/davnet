@@ -149,7 +149,7 @@ class InputTransition(nn.Module):
 
 
 class DownTransition(nn.Module):
-    def __init__(self, in_channels, out_channels, num_convs, padding, elu, dropout=False):
+    def __init__(self, in_channels, out_channels, num_convs, padding, elu, dropout=True):
         super(DownTransition, self).__init__()
         self.down_conv = nn.Conv2d(in_channels, out_channels, kernel_size=2, stride=2, padding=padding)
         self.bn1 = nn.BatchNorm2d(out_channels)
@@ -169,7 +169,7 @@ class DownTransition(nn.Module):
 
 
 class UpTransition(nn.Module):
-    def __init__(self, in_channels, out_channels, num_convs, padding, elu, dropout=False):
+    def __init__(self, in_channels, out_channels, num_convs, padding, elu, dropout=True):
         super(UpTransition, self).__init__()
         out_channels //= 2 #because of the concat with feature forwarding
         self.up_conv = nn.ConvTranspose2d(in_channels, out_channels, kernel_size=2, padding=padding, stride=2)

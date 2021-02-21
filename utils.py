@@ -6,7 +6,7 @@ import pickle
 from torch.utils.data import DataLoader
 import time
 from threading import Thread
-
+from dataset import kMRI
 
 default_configs = {
     'balanced_batch_size': 8,
