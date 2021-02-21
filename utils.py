@@ -143,24 +143,21 @@ def baseline(N, model, cuda=True, num_classes=4):
 
     batches = N // 16
     dl = {
-        'source': DataLoader(dataset=source_ds, batch_size=16, shuffle=True),
-        'target': DataLoader(dataset=target_ds, batch_size=16, shuffle=True)
+        'source': iter(DataLoader(dataset=source_ds, batch_size=16, shuffle=True)),
+        'target': iter(DataLoader(dataset=target_ds, batch_size=16, shuffle=True))
     }
     dice = {
-        'source': torch.zeros(num_classes).float(),
-        'target': torch.zeros(num_classes).float()
+        'source': [0] * num_classes,
+        'target': [0] * num_classes
     }
 
-    for _ in range(batches):
-        for group in ['source', 'target']:
-            for img, seg, _ in dl[group]:
-                if cuda:
-                    img, seg = img.cuda(), seg.cuda()
-                dice[group] += per_class_dice(model(img, seg_only=True), seg,
-                    tolist=False).cpu()
+    for group in ['source', 'target']:
+        for i in ranges(batches):
+            img, seg, _ = next(dl[group])
+            if cuda:
+                img, seg = img.cuda(), seg.cuda()
+            new_dice = per_class_dice(model(img, seg_only=True), seg,
+                tolist=True)
+            dice = [d + n for d, n in zip(dice, new_dice)]
 
-    #source_sample, source_seg = random_sample(source_ds, 10, cuda=True)
-    #target_sample, target_seg = random_sample(target_ds, 10, cuda=True)
-    #mdd = model.feature_MDD(source_sample, target_sample)
-
-    return (dice['source']/batches).tolist(), (dice['target']/batches).tolist()
+    return [d / batches for d in dice['source']], [d / batches for d in dice['target']]
