@@ -131,7 +131,7 @@ losses = {
 def logger(timestamp, delim=','):
     def log(*args):
         line = delim.join(map(str, args))
-        with open('/data/bigbone6/skamat/checkpoints-davnet/logs/{timestamp}.log', 'a+') as f:
+        with open(f'/data/bigbone6/skamat/checkpoints-davnet/logs/{timestamp}.log', 'a+') as f:
             f.write(line)
             f.write('\n')
     return log
