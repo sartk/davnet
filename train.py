@@ -13,6 +13,8 @@ from torch.utils.data import DataLoader
 import pprint
 from itertools import cycle
 import pdb
+from configs import *
+
 def train(**kwargs):
 
     configs = default_configs.copy()
