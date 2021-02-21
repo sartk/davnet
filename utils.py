@@ -113,6 +113,8 @@ class BinaryDiceLoss(nn.Module):
             loss = 1 - num / den
         elif self.repr == '-log':
             loss = -torch.log(num / den)
+        else:
+            loss = num / den
 
         if self.reduction == 'mean':
             return loss.mean()
@@ -140,23 +142,34 @@ class DiceLoss(nn.Module):
         self.kwargs = kwargs
         self.weight = weight
         self.ignore_index = ignore_index
+        self.dice = BinaryDiceLoss(**self.kwargs)
 
-    def forward(self, predict, target):
+    def forward(self, predict, target, per_class=False):
         assert predict.shape == target.shape, 'predict & target shape do not match'
-        dice = BinaryDiceLoss(**self.kwargs)
-        total_loss = 0
+
+        if per_class:
+            total_loss = [0] * target.shape[1]
+        else:
+            total_loss = 0
+
         #predict = F.softmax(predict, dim=1)
 
         for i in range(target.shape[1]):
-            if i != self.ignore_index:
-                dice_loss = dice(predict[:, i], target[:, i])
+            if i != self.ignore_index or per_class:
+                dice_loss = self.dice(predict[:, i], target[:, i])
                 if self.weight is not None:
                     assert self.weight.shape[0] == target.shape[1], \
                         'Expect weight shape [{}], get[{}]'.format(target.shape[1], self.weight.shape[0])
                     dice_loss *= self.weights[i]
-                total_loss += dice_loss
+                if per_class:
+                    total_loss[i] = dice_loss.item()
+                else:
+                    total_loss += dice_loss
 
-        return total_loss/target.shape[1]
+        if per_class:
+            return total_loss
+        else:
+            return total_loss/target.shape[1]
 
 def identity_tracker(x, **kwargs):
     return x
@@ -204,6 +217,7 @@ def logger(timestamp, delim=','):
 
 source_ds = kMRI('valid', balanced=False, group='source')
 target_ds = kMRI('valid', balanced=False, group='target')
+dice = DiceLoss(repr='')
 
 def baseline(N, model, cuda=True, num_classes=4):
 
@@ -222,8 +236,7 @@ def baseline(N, model, cuda=True, num_classes=4):
             img, seg, _ = next(dl[group])
             if cuda:
                 img, seg = img.cuda(), seg.cuda()
-            new_dice = per_class_dice(model(img, seg_only=True), seg,
-                tolist=True)
+            new_dice = dice(model(img, seg_only=True), seg, per_class=True)
             dice[group] = [d + n for d, n in zip(dice[group], new_dice)]
 
     return [d / batches for d in dice['source']], [d / batches for d in dice['target']]
