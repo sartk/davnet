@@ -10,7 +10,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import os
 from torch.utils.data import DataLoader
-from pprint import pprint
+import pprint
 from itertools import cycle
 import pdb
 def train(**kwargs):
@@ -145,6 +145,14 @@ def train(**kwargs):
                     log('Seg Loss', safe_div(M['running_seg_loss'], M['sample_count']))
 
                 if configs['valid_freq'] and i % configs['valid_freq'] == 0:
+                    del img
+                    del seg
+                    del img_a
+                    del img_b
+                    del seg_label
+                    del domain_label
+                    del dlab
+                    del _
                     log(f'\nPeriodic Validation on Epoch {epoch}, Iteration {i}')
                     source_dice, target_dice = baseline(100, model)
                     log('MDD', MDD)
