@@ -157,7 +157,7 @@ def baseline(N, model, cuda=True, num_classes=4):
                 if cuda:
                     img, seg = img.cuda(), seg.cuda()
                 dice[group] += per_class_dice(model(img, seg_only=True), seg,
-                            classes=num_classes, batch=16, tolist=False).cpu()
+                    tolist=False).cpu()
 
     source_sample, source_seg = random_sample(source_ds, 10, cuda=True)
     target_sample, target_seg = random_sample(target_ds, 10, cuda=True)
