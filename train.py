@@ -146,7 +146,7 @@ def train(**kwargs):
 
                 if configs['valid_freq'] and i % configs['valid_freq'] == 0:
                     log(f'\nPeriodic Validation on Epoch {epoch}, Iteration {i}')
-                    MDD, source_dice, target_dice = baseline(100)
+                    MDD, source_dice, target_dice = baseline(100, model)
                     log('MDD', MDD)
                     log('Source Valid Dice', source_dice)
                     log('Target Valid Dice', target_dice)

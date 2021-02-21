@@ -12,7 +12,7 @@ default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 16,
     'learning_rate':  10e-5,
-    'seg_loss': 'weighted_dice',
+    'seg_loss': 'dice_loss_normal',
     'domain_loss': 'bce',
     'weight_decay': 1,
     'print_progress': True,
@@ -139,7 +139,7 @@ def logger(timestamp, delim=','):
 source_ds = kMRI('valid', balanced=False, group='source')
 target_ds = kMRI('valid', balanced=False, group='target')
 
-def baseline(N):
+def baseline(N, model):
     source_sample, source_seg = random_sample(source_ds, N, cuda=True)
     target_sample, target_seg = random_sample(target_ds, N, cuda=True)
     mdd = model.feature_MDD(source_sample, target_sample)
