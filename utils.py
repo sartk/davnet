@@ -12,7 +12,7 @@ default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 16,
     'learning_rate':  10e-5,
-    'seg_loss': 'weighted_dice',
+    'seg_loss': 'per_class_loss',
     'domain_loss': 'bce',
     'weight_decay': 1,
     'print_progress': True,
@@ -37,7 +37,8 @@ default_configs = {
     'MDD_sample_size': 10,
     'domain_loss_weight': 1,
     'disc_in': [3, 4, 5, 6],
-    'valid_freq': 1000
+    'valid_freq': 1000,
+    'message': ''
 }
 
 phase_counter = {

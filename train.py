@@ -18,10 +18,12 @@ def train(**kwargs):
     configs = default_configs.copy()
     configs.update(kwargs)
     N = configs['num_epochs']
-
     tracker = tqdm if configs['print_progress'] else identity_tracker
     os.environ['CUDA_VISIBLE_DEVICES'] = configs['CUDA_VISIBLE_DEVICES']
-    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    message = configs['message']
+    if message:
+        message = f'-{message}'
+    timestamp = '{}{}'.format(time.strftime("%Y%m%d-%H%M%S"), message)
     log = logger(timestamp)
     n = configs['num_workers']
     dataloaders = {
