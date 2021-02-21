@@ -94,11 +94,12 @@ class BinaryDiceLoss(nn.Module):
     Raise:
         Exception if unexpected reduction
     """
-    def __init__(self, smooth=0.1, p=2, reduction='mean', representation='-log'):
+    def __init__(self, smooth=0.1, p=2, reduction='mean', repr='-log'):
         super(BinaryDiceLoss, self).__init__()
         self.smooth = smooth
         self.p = p
         self.reduction = reduction
+        self.repr = repr
 
     def forward(self, predict, target):
         assert predict.shape[0] == target.shape[0], "predict & target batch size don't match"
@@ -108,9 +109,9 @@ class BinaryDiceLoss(nn.Module):
         num = torch.sum(torch.mul(predict, target), dim=1) + self.smooth
         den = torch.sum(predict.pow(self.p) + target.pow(self.p), dim=1) + self.smooth
 
-        if representation == '1-':
+        if self.repr == '1-':
             loss = 1 - num / den
-        elif representation == '-log':
+        elif self.repr == '-log':
             loss = -torch.log(num / den)
 
         if self.reduction == 'mean':
