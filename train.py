@@ -154,7 +154,10 @@ def train(**kwargs):
             M['epoch_domain_acc'] = safe_div(M['running_domain_acc'], M['balanced_sample_count'])
             M['epoch_seg_loss'] = safe_div(M['running_seg_loss'], M['sample_count'])
 
-            log(pprint.pformat(M, indent=4))
+            try:
+                log(pprint.pformat(M, indent=4))
+            except:
+                pprint.pprint(M)
             torch.cuda.empty_cache()
             gc.collect()
 
