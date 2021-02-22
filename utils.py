@@ -61,7 +61,7 @@ class BinaryDiceLoss(nn.Module):
     Raise:
         Exception if unexpected reduction
     """
-    def __init__(self, smooth=0.1, p=2, reduction='mean', repr='-log'):
+    def __init__(self, smooth=0.1, p=2, reduction='mean', repr='1-'):
         super(BinaryDiceLoss, self).__init__()
         self.smooth = smooth
         self.p = p
@@ -138,6 +138,24 @@ class DiceLoss(nn.Module):
         else:
             return total_loss/target.shape[1]
 
+def dice_loss_normal(Y_hat, Y, smooth=1e-10):
+    return (-torch.log(dice_score(Y_hat, Y, smooth))).sum(0)
+
+def dice_score(Y_hat, Y, smooth=1e-10, flat=False):
+    assert Y_hat.size() == Y.size()
+    if not flat:
+        Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
+    intersection = (Y * Y_hat).sum(-1)
+    union = Y.sum(-1) + Y_hat.sum(-1)
+    return (2 * intersection + smooth) / (union + smooth)
+
+def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
+    assert Y_hat.size() == Y.size()
+    background_sum = Y[:, 0, :, :].sum()
+    for i in range(Y.size(1)):
+        Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum(), 1) ** exp)
+    return dice_loss_normal(Y_hat, Y)
+
 def identity_tracker(x, **kwargs):
     return x
 
@@ -171,7 +189,10 @@ models = {
 }
 
 losses = {
+    'dice': dice_loss_normal,
+    'weighted_dice': dice_loss_weighted,
     'nll': nn.NLLLoss(),
+    'per_class_loss': per_class_loss
 }
 
 def logger(timestamp, delim=','):

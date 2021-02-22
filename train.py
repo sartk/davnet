@@ -50,7 +50,7 @@ def train(**kwargs):
     if configs['cuda']:
         model = model.cuda()
 
-    F_seg_loss = DiceLoss(weight=configs['dice_weights'])
+    F_seg_loss = losses[configs['seg_loss']]
     F_domain_loss = losses[configs['domain_loss']]
 
     if  configs['optimizer'] == 'adam':
