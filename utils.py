@@ -156,6 +156,14 @@ def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
         Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum(), 1) ** exp)
     return dice_loss_normal(Y_hat, Y)
 
+def per_class_dice(Y_hat, Y, tolist=True):
+    assert Y_hat.size() == Y.size()
+    Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
+    dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0).squeeze()
+    if tolist:
+        dice = dice.tolist()
+    return dice
+
 def identity_tracker(x, **kwargs):
     return x
 
@@ -205,7 +213,7 @@ def logger(timestamp, delim=','):
 
 source_ds = kMRI('valid', balanced=False, group='source')
 target_ds = kMRI('valid', balanced=False, group='target')
-dice_per_class = DiceLoss(repr='')
+#per_class_dice = DiceLoss(repr='')
 
 def baseline(N, model, cuda=True, num_classes=4):
 
@@ -224,7 +232,7 @@ def baseline(N, model, cuda=True, num_classes=4):
             img, seg, _ = next(dl[group])
             if cuda:
                 img, seg = img.cuda(), seg.cuda()
-            new_dice = dice_per_class(model(img, seg_only=True), seg, per_class=True)
+            new_dice = per_class_dice(model(img, seg_only=True), seg, tolist=True)
             dice[group] = [d + n for d, n in zip(dice[group], new_dice)]
 
     return [d / batches for d in dice['source']], [d / batches for d in dice['target']]
