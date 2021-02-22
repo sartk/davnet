@@ -206,6 +206,7 @@ losses = {
     'dice': dice_loss_normal,
     'weighted_dice': dice_loss_weighted,
     'nll': nn.NLLLoss(),
+    'per_class': DiceLoss()
 }
 
 
