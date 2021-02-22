@@ -138,6 +138,12 @@ class DiceLoss(nn.Module):
         else:
             return total_loss/target.shape[1]
 
+def batch_flatten(X):
+    return X.view(X.size(0), -1)
+
+def batch_and_class_flatten(X):
+    return X.view(X.size(0), X.size(1), -1)
+
 def dice_loss_normal(Y_hat, Y, smooth=1e-10):
     return (-torch.log(dice_score(Y_hat, Y, smooth))).sum(0)
 
@@ -201,6 +207,7 @@ losses = {
     'weighted_dice': dice_loss_weighted,
     'nll': nn.NLLLoss(),
 }
+
 
 def logger(timestamp, delim=','):
     def log(*args):
