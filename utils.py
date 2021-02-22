@@ -200,7 +200,6 @@ losses = {
     'dice': dice_loss_normal,
     'weighted_dice': dice_loss_weighted,
     'nll': nn.NLLLoss(),
-    'per_class_loss': per_class_loss
 }
 
 def logger(timestamp, delim=','):
