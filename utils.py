@@ -113,6 +113,7 @@ class DiceLoss(nn.Module):
 
     def forward(self, predict, target, per_class=False):
         assert predict.shape == target.shape, "predict & target batch size don't match, {} and {}".format(predict.shape, target.shape)
+        #pdb.set_trace()
         if per_class:
             total_loss = [0] * target.shape[1]
         else:

@@ -48,7 +48,7 @@ while True:
     print("Per class dice: {}".format(dice(seg_pred, segmentation.view(1, 4, 344, 344), per_class=True)))
     print("Dice: {}".format(dice(seg_pred, segmentation.view(1, 4, 344, 344), per_class=False)))
     print("Weighted dice: {}".format(dice_loss_weighted(seg_pred, segmentation.view(1, 4, 344, 344))))
-    print("Natively calculated per class: {}".format(per_class_dice(seg_pred, segmentation.view(1, 4, 344, 344), tolist=True)))
+    print("Natively calculated per class: {}".format(1-per_class_dice(seg_pred, segmentation.view(1, 4, 344, 344), tolist=True)))
     image = image.view(344, 344).cpu().numpy()
     seg_pred = seg_pred.view(-1, 344, 344).argmax(0).cpu().numpy()
     segmentation = segmentation.view(-1, 344, 344).argmax(0).cpu().numpy()
