@@ -17,7 +17,7 @@ if cuda:
     checkpoint = torch.load(path)
 else:
     model = DAVNet2D(4, dp=False)
-    checkpoint = torch.load(PATH, map_location=lambda storage, location: 'cpu')
+    checkpoint = torch.load(PATH, map_location=lambda storage, location: storage)
 
 pretrained_dict = checkpoint['model_state_dict']
 
