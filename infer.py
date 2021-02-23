@@ -44,7 +44,7 @@ while True:
     with torch.no_grad():
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
 
-    save_mat({'input': image.view(1, 344, 344), 'prediction': seg_pred.view(4, 344, 344), 'target':segmentation.view(4, 344, 344)}, '/data/bigbone6/skamat/francesco.mat')
+    save_mat({'input': image.view(1, 344, 344).numpy(), 'prediction': seg_pred.view(4, 344, 344).numpy(), 'target':segmentation.view(4, 344, 344).numpy()}, '/data/bigbone6/skamat/francesco.mat')
     print("Dice: {}".format(dice(seg_pred, segmentation.view(1, 4, 344, 344), per_class=True)))
 
     image = image.view(344, 344).cpu().numpy()
