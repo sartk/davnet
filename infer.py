@@ -49,7 +49,7 @@ while True:
     save_mat({'input': image, 'prediction': seg_pred, 'target':segmentation}, '/data/bigbone6/skamat/francesco.mat')
 
     print("True Domain: {}, Predicted Domain: {}".format(domain, dom_pred))
-    print("Dice: {}".format(dice(seg_pred, seg, per_class=True)))
+    print("Dice: {}".format(dice(seg_pred, segmentation, per_class=True)))
     dom_pred = dom_pred.argmax(-1).view(-1)[0].item()
     domain = domain.view(-1)[0].item()
 
