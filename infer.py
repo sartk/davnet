@@ -33,7 +33,7 @@ if not cuda:
 model.load_state_dict(pretrained_dict)
 model.eval()
 
-data = kMRI('train', balanced=False, group='source')
+data = kMRI('valid', balanced=False, group='source')
 
 while True:
     print()
