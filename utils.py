@@ -69,7 +69,7 @@ class BinaryDiceLoss(nn.Module):
         self.repr = repr
 
     def forward(self, predict, target):
-        assert predict.shape[0] == target.shape[0], "predict & target batch size don't match"
+        assert predict.shape[0] == target.shape[0], "predict & target batch size don't match, {} and {}".format(predict.shape, target.shape)
         predict = predict.contiguous().view(predict.shape[0], -1)
         target = target.contiguous().view(target.shape[0], -1)
 
@@ -112,8 +112,7 @@ class DiceLoss(nn.Module):
         self.dice = BinaryDiceLoss(**self.kwargs)
 
     def forward(self, predict, target, per_class=False):
-        assert predict.shape == target.shape, 'predict & target shape do not match'
-
+        assert predict.shape == target.shape, "predict & target batch size don't match, {} and {}".format(predict.shape, target.shape)
         if per_class:
             total_loss = [0] * target.shape[1]
         else:
