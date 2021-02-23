@@ -47,7 +47,7 @@ while True:
     save_mat({'input': image.view(1, 344, 344).numpy(), 'prediction': seg_pred.view(4, 344, 344).numpy(), 'target':segmentation.view(4, 344, 344).numpy()}, '/data/bigbone6/skamat/francesco.mat')
     print("Per class dice: {}".format(dice(seg_pred, segmentation.view(1, 4, 344, 344), per_class=True)))
     print("Dice: {}".format(dice(seg_pred, segmentation.view(1, 4, 344, 344), per_class=False)))
-
+    print("Weighted dice: {}".format(dice_loss_weighted(seg_pred, segmentation.view(1, 4, 344, 344))))
     image = image.view(344, 344).cpu().numpy()
     seg_pred = seg_pred.view(-1, 344, 344).argmax(0).cpu().numpy()
     segmentation = segmentation.view(-1, 344, 344).argmax(0).cpu().numpy()
