@@ -10,6 +10,8 @@ import torch
 PATH = sys.argv[1]
 os.environ['CUDA_VISIBLE_DEVICES'] = sys.argv[2]
 
+cuda = not not sys.argv[2]
+
 if cuda:
     model = DAVNet2D(4, dp=True).cuda()
 else:
