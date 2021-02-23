@@ -45,7 +45,7 @@ while True:
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
 
     save_mat({'input': image, 'prediction': seg_pred, 'target':segmentation}, '/data/bigbone6/skamat/francesco.mat')
-    print("Dice: {}".format(dice(seg_pred, segmentation, per_class=True)))
+    print("Dice: {}".format(dice(seg_pred, segmentation.view(1, 1, 344, 344), per_class=True)))
 
     image = image.view(344, 344).cpu().numpy()
     seg_pred = seg_pred.view(-1, 344, 344).argmax(0).cpu().numpy()
