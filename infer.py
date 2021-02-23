@@ -14,7 +14,7 @@ cuda = not not sys.argv[2]
 
 if cuda:
     model = DAVNet2D(4, dp=True).cuda()
-    checkpoint = torch.load(path)
+    checkpoint = torch.load(PATH)
 else:
     model = DAVNet2D(4, dp=False)
     checkpoint = torch.load(PATH, map_location=lambda storage, location: storage)
@@ -55,4 +55,5 @@ while True:
     plt.imshow(seg_pred)
 
     plt.savefig('tmp.png')
+    plt.show()
     print('File saved to tmp.png')
