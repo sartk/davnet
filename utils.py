@@ -170,6 +170,21 @@ def per_class_dice(Y_hat, Y, tolist=True, p=2):
         dice = dice.tolist()
     return dice
 
+def dice_loss_fra(target,prediction,p=2,smooth=1e-9,return_mean = False):
+    ncl = target.shape[1]
+    per_class = np.zeros((1,ncl))
+    for cl in range(nc):
+        pred = prediction[:,cl]
+        targ = target[:,cl]
+        inters = torch.multiply(pred,targ)
+        numerator = (2 * torch.sum(inters,dim=(1,2)))
+        denominator_sq = (torch.sum(targ**p),dim=(1,2))) + (torch.sum(pred**2,dim=(1,2)))
+        per_class[cl] = torch.mean((numerator/(denominator_sq + smooth)),dim=0)
+    if return_mean:
+        return torch.mean(per_class), per_class
+    else:
+        return per_class
+
 def identity_tracker(x, **kwargs):
     return x
 
