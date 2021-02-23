@@ -61,7 +61,7 @@ class BinaryDiceLoss(nn.Module):
     Raise:
         Exception if unexpected reduction
     """
-    def __init__(self, smooth=0.1, p=2, reduction='mean', repr='1-'):
+    def __init__(self, smooth=0.1, p=2, reduction='mean', repr='-log'):
         super(BinaryDiceLoss, self).__init__()
         self.smooth = smooth
         self.p = p
@@ -147,12 +147,12 @@ def batch_and_class_flatten(X):
 def dice_loss_normal(Y_hat, Y, smooth=1e-10):
     return (-torch.log(dice_score(Y_hat, Y, smooth))).sum(0)
 
-def dice_score(Y_hat, Y, smooth=1e-10, flat=False):
+def dice_score(Y_hat, Y, smooth=1e-10, flat=False, p=2):
     assert Y_hat.size() == Y.size()
     if not flat:
         Y, Y_hat = batch_flatten(Y), batch_flatten(Y_hat)
     intersection = (Y * Y_hat).sum(-1)
-    union = Y.sum(-1) + Y_hat.sum(-1)
+    union = (Y * Y).sum(-1) + (Y_hat.pow(p) * Y_hat.pow(p)).sum(-1)
     return (2 * intersection + smooth) / (union + smooth)
 
 def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
@@ -162,10 +162,10 @@ def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
         Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum(), 1) ** exp)
     return dice_loss_normal(Y_hat, Y)
 
-def per_class_dice(Y_hat, Y, tolist=True):
+def per_class_dice(Y_hat, Y, tolist=True, p=2):
     assert Y_hat.size() == Y.size()
     Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
-    dice = 2 * ((Y * Y_hat).sum(-1) / (Y + Y_hat).sum(-1)).mean(0).squeeze()
+    dice = 2 * ((Y * Y_hat).sum(-1) / (Y.pow(p) + Y_hat.pow(p)).sum(-1)).mean(0).squeeze()
     if tolist:
         dice = dice.tolist()
     return dice
