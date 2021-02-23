@@ -173,7 +173,7 @@ def per_class_dice(Y_hat, Y, tolist=True, p=2):
 def dice_loss_fra(target,prediction,p=2,smooth=1e-9,return_mean = False):
     ncl = target.shape[1]
     per_class = np.zeros((1,ncl))
-    for cl in range(nc):
+    for cl in range(ncl):
         pred = prediction[:,cl]
         targ = target[:,cl]
         inters = torch.multiply(pred,targ)
