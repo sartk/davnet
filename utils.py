@@ -176,7 +176,7 @@ def dice_loss_fra(target,prediction,p=2,smooth=1e-9,return_mean = False):
     for cl in range(ncl):
         pred = prediction[:,cl]
         targ = target[:,cl]
-        inters = torch.multiply(pred,targ)
+        inters = pred * targ
         numerator = (2 * torch.sum(inters,dim=(1,2)))
         denominator_sq = (torch.sum(targ**p,dim=(1,2))) + (torch.sum(pred**2,dim=(1,2)))
         per_class[cl] = torch.mean((numerator/(denominator_sq + smooth)),dim=0)
