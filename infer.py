@@ -10,11 +10,17 @@ import torch
 PATH = sys.argv[1]
 os.environ['CUDA_VISIBLE_DEVICES'] = sys.argv[2]
 
-model = DAVNet2D(4, dp=True).cuda()
+if cuda:
+    model = DAVNet2D(4, dp=True).cuda()
+else:
+    model = DAVNet2D(4, dp=False)
+
 checkpoint = torch.load(PATH)
 pretrained_dict = checkpoint['model_state_dict']
 
-#pretrained_dict = {key.replace("module.", ""): value for key, value in pretrained_dict.items()}
+if not cuda:
+    pretrained_dict = {key.replace("module.", ""): value for key, value in pretrained_dict.items()}
+
 model.load_state_dict(pretrained_dict)
 model.eval()
 
@@ -24,7 +30,8 @@ while True:
     print()
     i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
     image, segmentation, domain = data[i]
-    image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()
+    if cuda:
+        image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()
     with torch.no_grad():
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
     image = image.view(344, 344).cpu().numpy()
