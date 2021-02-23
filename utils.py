@@ -61,7 +61,7 @@ class BinaryDiceLoss(nn.Module):
     Raise:
         Exception if unexpected reduction
     """
-    def __init__(self, smooth=0.1, p=2, reduction='mean', repr='-log'):
+    def __init__(self, smooth=1e-9, p=2, reduction='mean', repr='-log'):
         super(BinaryDiceLoss, self).__init__()
         self.smooth = smooth
         self.p = p

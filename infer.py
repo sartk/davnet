@@ -6,7 +6,7 @@ import numpy as np
 import sys
 import os
 import torch
-from utils import DiceLoss
+from utils import DiceLoss, dice_loss_weighted
 from scipy.io import loadmat, savemat
 
 def save_mat(var, path):
