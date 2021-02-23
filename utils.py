@@ -164,8 +164,8 @@ def dice_loss_weighted(Y_hat, Y, exp=0.5, smooth=1e-10):
 
 def per_class_dice(Y_hat, Y, tolist=True, p=2):
     assert Y_hat.size() == Y.size()
-    Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat)
-    dice = 2 * ((Y * Y_hat).sum(-1) / (Y.pow(p) + Y_hat.pow(p)).sum(-1)).mean(0).squeeze()
+    Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat) # [N, C, flat]
+    dice = 2 * (((Y * Y_hat).sum(-1)) / (Y.pow(p).sum(-1) + Y_hat.pow(p).sum(-1))).mean(0).squeeze()
     if tolist:
         dice = dice.tolist()
     return dice
