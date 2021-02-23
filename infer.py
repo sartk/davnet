@@ -51,6 +51,8 @@ while True:
     seg_pred = seg_pred.view(-1, 344, 344).argmax(0).cpu().numpy()
     segmentation = segmentation.view(-1, 344, 344).argmax(0).cpu().numpy()
 
+    save_mat({'input': image, 'prediction': seg_pred, 'target':segmentation}, '/data/bigbone6/skamat/francesco2d.mat')
+
     print("True Domain: {}, Predicted Domain: {}".format(domain, dom_pred))
     dom_pred = dom_pred.argmax(-1).view(-1)[0].item()
     domain = domain.view(-1)[0].item()
