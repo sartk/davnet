@@ -163,10 +163,14 @@ def dice_loss_weighted(Y_hat, Y, exp=0.5, smooth=1e-10):
         Y[:, i, :, :] = Y[:, i, :, :] * (safe_div(background_sum, Y[:, i, :, :].sum(), 1) ** exp)
     return dice_loss_normal(Y_hat, Y)
 
-def per_class_dice(Y_hat, Y, tolist=True, p=2):
+def per_class_dice(Y_hat, Y, tolist=True, p=2, repr=''):
     assert Y_hat.size() == Y.size()
     Y, Y_hat = batch_and_class_flatten(Y), batch_and_class_flatten(Y_hat) # [N, C, flat]
     dice = 2 * (((Y * Y_hat).sum(-1)) / (Y.pow(p).sum(-1) + Y_hat.pow(p).sum(-1))).mean(0).squeeze()
+    if repr == '-log':
+        dice = -torch.log(dice)
+    elif repr == '1-':
+        dice = 1 - dice
     if tolist:
         dice = dice.tolist()
     return dice
@@ -232,7 +236,8 @@ losses = {
     'dice': dice_loss_normal,
     'weighted_dice': dice_loss_weighted,
     'nll': nn.NLLLoss(),
-    'per_class': DiceLoss()
+    'per_class': DiceLoss(),
+    'native_per_class': per_class_dice
 }
 
 
