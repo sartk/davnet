@@ -191,7 +191,9 @@ def py_dice(target, prediction):
     total_across_batches = [0] * target.size(1)
     for b in range(target.size(0)):
         for c in range(target.size(1)):
-            total_across_batches[c] += python_dice(torch.flatten(target[b, c, :, :]), torch.flatten(prediction[b, c, :, :]))
+            Y_hat = target[b, c, :, :].squeeze()
+            Y = prediction[b, c, :, :].squeeze()
+            total_across_batches[c] += 1.-torch.mean((2*(Y_hat*Y)).sum(-1).sum(-1)/(Y_hat.pow(2).sum(-1).sum(-1)+Y.pow(2).sum(-1).sum(-1)))
     return [b / target.size(0) for b in total_across_batches]
 
 def identity_tracker(x, **kwargs):
