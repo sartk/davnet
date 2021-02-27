@@ -39,7 +39,7 @@ while True:
     print()
     i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
     image, segmentation, domain = data[i]
-    segmentation.view(1, 4, 344, 344)
+    segmentation = segmentation.view(1, 4, 344, 344)
     if cuda:
         image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()
     with torch.no_grad():
