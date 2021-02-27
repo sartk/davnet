@@ -8,6 +8,7 @@ import time
 from threading import Thread
 from dataset import kMRI
 from configs import *
+from scipy.spatial.distance import dice as python_dice
 
 phase_counter = {
     'train': 0,
@@ -184,6 +185,15 @@ def dice_loss_fra(target,prediction,p=2,smooth=1e-9,return_mean = False):
         return torch.mean(per_class), per_class
     else:
         return per_class
+
+def py_dice(target, prediction):
+    assert target.size() == prediction.size()
+    total_across_batches = [0] * target.size(1)
+    for b in range(target.size(0)):
+        for c in range(target.size(1)):
+            total_across_classes += python_dice(torch.flatten(target[b, c, :, :]), torch.flatten(prediction[b, c, :, :]))
+        total_across_batches[c] += total_across_classes
+    return [b / total.size(0) for b in total_across_batches]
 
 def identity_tracker(x, **kwargs):
     return x

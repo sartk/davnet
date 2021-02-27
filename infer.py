@@ -40,16 +40,17 @@ while True:
     i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
     image, segmentation, domain = data[i]
     if cuda:
-        image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()
+        image, segmentation, domain = image.cuda(), segmentation.cuda().view(1, 4, 344, 344), domain.cuda()
     with torch.no_grad():
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
 
     save_mat({'input': image.view(1, 344, 344).numpy(), 'prediction': seg_pred.view(4, 344, 344).numpy(), 'target':segmentation.view(4, 344, 344).numpy()}, '/data/bigbone6/skamat/francesco.mat')
-    print("Per class dice: {}".format(dice(seg_pred, segmentation.view(1, 4, 344, 344), per_class=True)))
-    print("Dice: {}".format(dice(seg_pred, segmentation.view(1, 4, 344, 344), per_class=False)))
-    print("Weighted dice: {}".format(dice_loss_weighted(seg_pred, segmentation.view(1, 4, 344, 344))))
-    print("Native per class: {}".format(per_class_dice(seg_pred, segmentation.view(1, 4, 344, 344), tolist=True)))
-    print("Fra per class: {}".format(dice_loss_fra(seg_pred, segmentation.view(1, 4, 344, 344)).tolist()))
+    print("Per class dice: {}".format(dice(seg_pred, segmentation, per_class=True)))
+    print("Dice: {}".format(dice(seg_pred, segmentation, per_class=False)))
+    print("Weighted dice: {}".format(dice_loss_weighted(seg_pred, segmentation)))
+    print("Native per class: {}".format(per_class_dice(seg_pred, segmentation, tolist=True)))
+    print("Fra per class: {}".format(dice_loss_fra(seg_pred, segmentation).tolist()))
+    print("Py per class: {}".format(py_dice(seg_pred, segmentation)))
 
     image = image.view(344, 344).cpu().numpy()
     seg_pred = seg_pred.view(-1, 344, 344).argmax(0).cpu().numpy()
