@@ -176,7 +176,7 @@ def per_class_dice(Y_hat, Y, tolist=True, p=2, repr=''):
     return dice
 
 def native_per_class(Y_hat, Y):
-    return per_class_dice(Y_hat, Y, False, 2, '-log').sum()
+    return per_class_dice(Y_hat, Y, False, 2, '1-').sum()
 
 def dice_loss_fra(target,prediction,p=2,smooth=1e-9,return_mean = False):
     ncl = target.shape[1]
