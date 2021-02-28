@@ -175,6 +175,9 @@ def per_class_dice(Y_hat, Y, tolist=True, p=2, repr=''):
         dice = dice.tolist()
     return dice
 
+def native_per_class(Y_hat, Y):
+    return per_class_dice(Y_hat, Y, False, 2, '-log')
+
 def dice_loss_fra(target,prediction,p=2,smooth=1e-9,return_mean = False):
     ncl = target.shape[1]
     per_class = np.zeros(ncl)
@@ -237,7 +240,7 @@ losses = {
     'weighted_dice': dice_loss_weighted,
     'nll': nn.NLLLoss(),
     'per_class': DiceLoss(),
-    'native_per_class': per_class_dice
+    'native_per_class': native_per_class
 }
 
 
