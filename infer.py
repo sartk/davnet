@@ -21,9 +21,11 @@ cuda = not not sys.argv[2]
 if cuda:
     model = DAVNet2D(4, dp=True).cuda()
     checkpoint = torch.load(PATH)
+    cpu = lambda x: x.cpu()
 else:
     model = DAVNet2D(4, dp=False)
     checkpoint = torch.load(PATH, map_location=lambda storage, location: storage)
+    cpu = lambda x: x
 
 pretrained_dict = checkpoint['model_state_dict']
 
@@ -50,11 +52,11 @@ while True:
     print("Native per class loss: {}".format(per_class_dice(seg_pred, segmentation, tolist=True)))
     print("Py per class: {}".format(py_dice(seg_pred, segmentation)))
 
-    image = image.view(344, 344).cpu().numpy()
+    image = cpu(image.view(344, 344)).numpy()
     seg_pred = seg_pred.view(-1, 344, 344)
-    seg_confidence = seg_pred.max(dim=0).cpu().numpy()
-    seg_pred = seg_pred.argmax(0).cpu().numpy()
-    segmentation = segmentation.view(-1, 344, 344).argmax(0).cpu().numpy()
+    seg_confidence = torch.max(seg_pred, dim=0).numpy()
+    seg_pred = cpu(seg_pred.argmax(0)).numpy()
+    segmentation = cpu(segmentation.view(-1, 344, 344).argmax(0)).numpy()
 
     save_mat({'input': image, 'prediction': seg_pred, 'target':segmentation}, '/data/bigbone6/skamat/francesco2d.mat')
 
