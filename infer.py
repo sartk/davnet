@@ -46,15 +46,14 @@ while True:
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
 
     save_mat({'input': image.view(1, 344, 344).numpy(), 'prediction': seg_pred.view(4, 344, 344).numpy(), 'target':segmentation.view(4, 344, 344).numpy()}, '/data/bigbone6/skamat/francesco.mat')
-    print("Per class dice: {}".format(dice(seg_pred, segmentation, per_class=True)))
-    print("Dice: {}".format(dice(seg_pred, segmentation, per_class=False)))
     print("Weighted dice: {}".format(dice_loss_weighted(seg_pred, segmentation)))
-    print("Native per class: {}".format(per_class_dice(seg_pred, segmentation, tolist=True)))
-    print("Fra per class: {}".format(dice_loss_fra(seg_pred, segmentation).tolist()))
+    print("Native per class loss: {}".format(per_class_dice(seg_pred, segmentation, tolist=True)))
     print("Py per class: {}".format(py_dice(seg_pred, segmentation)))
 
     image = image.view(344, 344).cpu().numpy()
-    seg_pred = seg_pred.view(-1, 344, 344).argmax(0).cpu().numpy()
+    seg_pred = seg_pred.view(-1, 344, 344)
+    seg_confidence = seg_pred.max(dim=0).cpu().numpy()
+    seg_pred = seg_pred.argmax(0).cpu().numpy()
     segmentation = segmentation.view(-1, 344, 344).argmax(0).cpu().numpy()
 
     save_mat({'input': image, 'prediction': seg_pred, 'target':segmentation}, '/data/bigbone6/skamat/francesco2d.mat')
@@ -66,12 +65,15 @@ while True:
     #print("True Domain: {}, Predicted Domain: {}".format(domain, dom_pred))
 
     f = plt.figure()
-    f.add_subplot(1,3, 1)
+    f.add_subplot(1,4, 1)
     plt.imshow(image, cmap='gray')
-    f.add_subplot(1,3, 2)
+    f.add_subplot(1,4, 2)
     plt.imshow(segmentation)
-    f.add_subplot(1,3, 3)
+    f.add_subplot(1,4, 3)
     plt.imshow(seg_pred)
+    f.add_subplot(1,4,4)
+    plt.imshow(seg_confidence, cmap='jet')
+    plt.colorbar()
 
     plt.savefig('tmp.png')
     plt.show()
