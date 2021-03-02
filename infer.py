@@ -15,7 +15,7 @@ def save_mat(var, path):
 PATH = sys.argv[1]
 os.environ['CUDA_VISIBLE_DEVICES'] = sys.argv[2]
 dice = DiceLoss(repr='1-')
-
+np = lambda lst: tuple([l.numpy() for l in lst])
 cuda = not not sys.argv[2]
 
 if cuda:
@@ -54,7 +54,7 @@ while True:
 
     image = cpu(image.view(344, 344)).numpy()
     seg_pred = seg_pred.view(-1, 344, 344)
-    seg_confidence, seg_pred = torch.max(seg_pred, dim=0).numpy()
+    seg_confidence, seg_pred = np(torch.max(seg_pred, dim=0))
     segmentation = cpu(segmentation.view(-1, 344, 344).argmax(0)).numpy()
 
     save_mat({'input': image, 'prediction': seg_pred, 'target':segmentation}, '/data/bigbone6/skamat/francesco2d.mat')
