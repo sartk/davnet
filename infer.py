@@ -40,7 +40,7 @@ data = kMRI('valid', balanced=False, group='source')
 while True:
     print()
     i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
-    image, segmentation, domain, meta = data.__getitem__(i, meta=True)
+    image, segmentation, domain, meta = data.__getitem__(i, meta=True, dangerous=True)
     segmentation = segmentation.view(1, 4, 344, 344)
     if cuda:
         image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()

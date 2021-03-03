@@ -127,7 +127,7 @@ def train(**kwargs):
                 optimizer.zero_grad()
 
                 seg_pred = model(img, grad_reversal_coef, seg_only=True)
-                seg_loss = F_seg_loss(seg_pred, seg_label)
+                seg_loss = F_seg_loss(seg_pred, seg_label, exp=configs['dice_loss_exp'])
 
                 if warmup:
                     err = seg_loss

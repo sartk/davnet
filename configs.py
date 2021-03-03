@@ -29,5 +29,6 @@ default_configs = {
     'disc_in': [3, 4, 5, 6],
     'valid_freq': 500,
     'message': '',
-    'dice_weights': None
+    'dice_weights': None,
+    'dice_loss_exp': 0.7
 }

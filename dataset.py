@@ -33,10 +33,12 @@ class kMRI(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, idx, meta=False):
+    def __getitem__(self, idx, meta=False, dangerous=True):
         if torch.is_tensor(idx):
             idx = idx.tolist()
         meta = self.data[idx]
+        if dangerous:
+            meta = ['/working/oaidl1/00m/0.C.3/9574138/20050209/10223410/022', '/data/knee_mri4/alaleh_all/vnet_T2_data/T2_val_mask_cleaned/9574138_V00.mat', 19, 1, 1144, 1396]
         if '.mat' in meta[1]:
             img, seg = load_oai(meta)
             domain = torch.tensor([1, 0])

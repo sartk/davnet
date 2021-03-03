@@ -156,7 +156,7 @@ def dice_score(Y_hat, Y, smooth=1e-10, flat=False, p=2):
     union = (Y * Y).sum(-1) + (Y_hat.pow(p) * Y_hat.pow(p)).sum(-1)
     return (2 * intersection + smooth) / (union + smooth)
 
-def dice_loss_weighted(Y_hat, Y, exp=0.35, smooth=1e-10):
+def dice_loss_weighted(Y_hat, Y, exp=0.7, smooth=1e-10):
     assert Y_hat.size() == Y.size()
     background_sum = Y[:, 0, :, :].sum()
     for i in range(Y.size(1)):
