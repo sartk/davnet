@@ -33,20 +33,20 @@ class kMRI(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx, meta=False):
         if torch.is_tensor(idx):
             idx = idx.tolist()
-        x = self.data[idx]
-        if '.mat' in x[1]:
-            img, seg = load_oai(x)
+        meta = self.data[idx]
+        if '.mat' in meta[1]:
+            img, seg = load_oai(meta)
             domain = torch.tensor([1, 0])
         else:
-            img, seg = load_ucsf(x)
+            img, seg = load_ucsf(meta)
             domain = torch.tensor([0, 1])
         img = torch.from_numpy(img).permute(2, 0, 1).contiguous()
         seg = torch.from_numpy(seg).permute(2, 0, 1).contiguous()
 
-        return img.float(), seg.float(), domain.long()
+        return img.float(), seg.float(), domain.long(), meta
 
 
 def load_pickle(path):

@@ -40,18 +40,18 @@ data = kMRI('valid', balanced=False, group='source')
 while True:
     print()
     i = int(input('Enter Image Index (0 - {})'.format(len(data) - 1)))
-    image, segmentation, domain = data[i]
+    image, segmentation, domain, meta = data__getitem__(i, meta=True)
     segmentation = segmentation.view(1, 4, 344, 344)
     if cuda:
         image, segmentation, domain = image.cuda(), segmentation.cuda(), domain.cuda()
     with torch.no_grad():
         seg_pred, dom_pred = model(image.view(1, 1, 344, 344), 0, False)
 
-    save_mat({'input': image.view(1, 344, 344).numpy(), 'prediction': seg_pred.view(4, 344, 344).numpy(), 'target':segmentation.view(4, 344, 344).numpy()}, '/data/bigbone6/skamat/francesco.mat')
+    save_mat({'input': image.view(1, 344, 344).numpy(), 'prediction': seg_pred.view(4, 344, 344).numpy(), 'target':segmentation.view(4, 344, 344).numpy(), 'meta':meta}, '/data/bigbone6/skamat/francesco.mat')
     print("Weighted dice: {}".format(dice_loss_weighted(seg_pred, segmentation)))
     print("Native per class loss: {}".format(per_class_dice(seg_pred, segmentation, tolist=True)))
     print("Py per class: {}".format(py_dice(seg_pred, segmentation)))
-
+    print("Path:", meta)
     image = cpu(image.view(344, 344)).numpy()
     seg_pred = seg_pred.view(-1, 344, 344)
     seg_confidence, seg_pred = np(torch.max(seg_pred, dim=0))
