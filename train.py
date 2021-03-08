@@ -15,6 +15,18 @@ from itertools import cycle
 import pdb
 from configs import *
 
+models = {
+    'davnet2d': DAVNet2D
+}
+
+losses = {
+    'dice': dice_loss_normal,
+    'weighted_dice': dice_loss_weighted,
+    'nll': nn.NLLLoss(),
+    'per_class': DiceLoss(),
+    'native_per_class': native_per_class
+}
+
 def train(**kwargs):
 
     configs = default_configs.copy()
@@ -100,6 +112,8 @@ def train(**kwargs):
             b = cycle([(None, None, None)] if warmup else dataloaders['balanced'][phase])
             iterator = tracker(zip(a, b), desc='batch', total=len_dataloader)
 
+            # img_a is the all source data, img_b is the balanced data.
+            # for training the VNet segmentation, img_b is not used.
             for ((img_a, seg_label, _), (img_b, _, dlab)) in iterator:
 
                 if configs['valid_freq'] and (i + 1) % configs['valid_freq'] == 0:

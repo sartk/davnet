@@ -206,19 +206,6 @@ def needs_update():
         return False
 
 
-models = {
-    'davnet2d': DAVNet2D
-}
-
-losses = {
-    'dice': dice_loss_normal,
-    'weighted_dice': dice_loss_weighted,
-    'nll': nn.NLLLoss(),
-    'per_class': DiceLoss(),
-    'native_per_class': native_per_class
-}
-
-
 def logger(timestamp, delim=','):
     def log(*args):
         line = delim.join(map(str, args))
