@@ -5,8 +5,7 @@ from torch.autograd import Function
 import numpy as np
 from torchvision import models
 from torchsummary import summary
-from transition_block import *
-
+from transition_blocks import *
 
 class DAVNet2D(nn.Module):
     def __init__(self, classes=4, disc_in=[3, 4, 5, 6], dp=True):
