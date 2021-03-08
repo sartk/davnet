@@ -10,6 +10,12 @@ from torch.utils.data import Dataset
 class kMRI(Dataset):
 
     def __init__(self, src, balanced=True, pickle_name=None, group='all'):
+        """
+        SRC: 'train', 'test', or 'valid'
+        GROUP: 'all', 'source', or 'target'
+        BALANCED: true or false
+        pickle_name: if there is a specific pickle file that has to be used
+        """
 
         assert group in ['all', 'source', 'target'], "group must be one of: 'all', 'source', 'target'"
         assert src in ['train', 'test', 'valid'], "src must be one of: 'train', 'test', 'valid'"
@@ -33,22 +39,23 @@ class kMRI(Dataset):
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, idx, meta=False, dangerous=True):
+    def __getitem__(self, idx):
         if torch.is_tensor(idx):
             idx = idx.tolist()
+
         meta = self.data[idx]
-        if dangerous:
-            meta = ['/working/oaidl1/00m/0.C.3/9574138/20050209/10223410/022', '/data/knee_mri4/alaleh_all/vnet_T2_data/T2_val_mask_cleaned/9574138_V00.mat', 19, 1, 1144, 1396]
+
         if '.mat' in meta[1]:
             img, seg = load_oai(meta)
             domain = torch.tensor([1, 0])
         else:
             img, seg = load_ucsf(meta)
             domain = torch.tensor([0, 1])
+
         img = torch.from_numpy(img).permute(2, 0, 1).contiguous()
         seg = torch.from_numpy(seg).permute(2, 0, 1).contiguous()
 
-        return img.float(), seg.float(), domain.long(), meta
+        return img.float(), seg.float(), domain.long()
 
 
 def load_pickle(path):

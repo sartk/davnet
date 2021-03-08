@@ -1,7 +1,7 @@
 default_configs = {
     'balanced_batch_size': 8,
     'all_source_batch_size': 16,
-    'learning_rate':  1e-5,
+    'learning_rate':  1e-4,
     'seg_loss': 'native_per_class',
     'domain_loss': 'nll',
     'weight_decay': 1,

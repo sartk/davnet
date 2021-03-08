@@ -178,31 +178,6 @@ def per_class_dice(Y_hat, Y, tolist=True, p=2, repr=''):
 def native_per_class(Y_hat, Y):
     return per_class_dice(Y_hat, Y, False, 2, '1-').sum()
 
-def dice_loss_fra(target,prediction,p=2,smooth=1e-9,return_mean = False):
-    ncl = target.shape[1]
-    per_class = np.zeros(ncl)
-    for cl in range(ncl):
-        pred = prediction[:,cl]
-        targ = target[:,cl]
-        inters = pred * targ
-        numerator = (2 * torch.sum(inters,dim=(0,1,2)))
-        denominator_sq = (torch.sum(targ**2,dim=(0,1,2))) + (torch.sum(pred**2,dim=(1,2)))
-        per_class[cl] = numerator/(denominator_sq + smooth)
-    if return_mean:
-        return torch.mean(per_class), per_class
-    else:
-        return per_class
-
-def py_dice(target, prediction):
-    assert target.size() == prediction.size()
-    total_across_batches = [0] * target.size(1)
-    for b in range(target.size(0)):
-        for c in range(target.size(1)):
-            Y_hat = target[b, c, :, :].squeeze()
-            Y = prediction[b, c, :, :].squeeze()
-            total_across_batches[c] += 1.-torch.mean((2*(Y_hat*Y)).sum(-1).sum(-1)/(Y_hat.pow(2).sum(-1).sum(-1)+Y.pow(2).sum(-1).sum(-1)))
-    return [b / target.size(0) for b in total_across_batches]
-
 def identity_tracker(x, **kwargs):
     return x
 
