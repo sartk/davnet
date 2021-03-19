@@ -47,98 +47,6 @@ def make_one_hot(input, num_classes):
 
     return result
 
-#github: @hubutui
-class BinaryDiceLoss(nn.Module):
-    """Dice loss of binary class
-    Args:
-        smooth: A float number to smooth loss, and avoid NaN error, default: 1
-        p: Denominator value: \sum{x^p} + \sum{y^p}, default: 2
-        predict: A tensor of shape [N, *]
-        target: A tensor of shape same with predict
-        reduction: Reduction method to apply, return mean over batch if 'mean',
-            return sum if 'sum', return a tensor of shape [N,] if 'none'
-    Returns:
-        Loss tensor according to arg reduction
-    Raise:
-        Exception if unexpected reduction
-    """
-    def __init__(self, smooth=1e-9, p=2, reduction='mean', repr='-log'):
-        super(BinaryDiceLoss, self).__init__()
-        self.smooth = smooth
-        self.p = p
-        self.reduction = reduction
-        self.repr = repr
-
-    def forward(self, predict, target):
-        assert predict.shape[0] == target.shape[0], "predict & target batch size don't match, {} and {}".format(predict.shape, target.shape)
-        predict = predict.contiguous().view(predict.shape[0], -1)
-        target = target.contiguous().view(target.shape[0], -1)
-
-        num = torch.sum(torch.mul(predict, target), dim=1) + self.smooth
-        den = torch.sum(predict.pow(self.p) + target.pow(self.p), dim=1) + self.smooth
-
-        if self.repr == '1-':
-            loss = 1 - num / den
-        elif self.repr == '-log':
-            loss = -torch.log(num / den)
-        else:
-            loss = num / den
-
-        if self.reduction == 'mean':
-            return loss.mean()
-        elif self.reduction == 'sum':
-            return loss.sum()
-        elif self.reduction == 'none':
-            return loss
-        else:
-            raise Exception('Unexpected reduction {}'.format(self.reduction))
-
-#github: @hubutui
-class DiceLoss(nn.Module):
-    """Dice loss, need one hot encode input
-    Args:
-        weight: An array of shape [num_classes,]
-        ignore_index: class index to ignore
-        predict: A tensor of shape [N, C, *]
-        target: A tensor of same shape with predict
-        other args pass to BinaryDiceLoss
-    Return:
-        same as BinaryDiceLoss
-    """
-    def __init__(self, weight=None, ignore_index=None, **kwargs):
-        super(DiceLoss, self).__init__()
-        self.kwargs = kwargs
-        self.weight = weight
-        self.ignore_index = ignore_index
-        self.dice = BinaryDiceLoss(**self.kwargs)
-
-    def forward(self, predict, target, per_class=False):
-        assert predict.shape == target.shape, "predict & target batch size don't match, {} and {}".format(predict.shape, target.shape)
-        #pdb.set_trace()
-        if per_class:
-            total_loss = [0] * target.shape[1]
-        else:
-            total_loss = 0
-
-        #predict = F.softmax(predict, dim=1)
-
-        for i in range(target.shape[1]):
-            if i != self.ignore_index or per_class:
-                dice_loss = self.dice(predict[:, i], target[:, i])
-                if self.weight is not None:
-                    assert self.weight.shape[0] == target.shape[1], \
-                        'Expect weight shape [{}], get[{}]'.format(target.shape[1], self.weight.shape[0])
-                    dice_loss *= self.weights[i]
-                if per_class:
-                    total_loss[i] = dice_loss.item()
-                else:
-                    total_loss += dice_loss
-
-        if per_class:
-            return total_loss
-        else:
-            return total_loss/target.shape[1]
-
 def batch_flatten(X):
     return X.view(X.size(0), -1)
 
@@ -216,6 +124,7 @@ def logger(timestamp, delim=','):
 
 source_ds = kMRI('valid', balanced=False, group='source')
 target_ds = kMRI('valid', balanced=False, group='target')
+batchnorm2d = identity_tracker if default_configs['batchnrom'] else nn.BatchNorm2d
 #per_class_dice = DiceLoss(repr='')
 
 def baseline(N, model, cuda=True, num_classes=4):

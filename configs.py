@@ -30,5 +30,6 @@ default_configs = {
     'valid_freq': 500,
     'message': '',
     'dice_weights': None,
-    'dice_loss_exp': 0.7
+    'dice_loss_exp': 0.7,
+    'batchnorm': False
 }
