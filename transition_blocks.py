@@ -1,4 +1,4 @@
-batchnorm2d(def passthrough(x, **kwargs):
+def passthrough(x, **kwargs):
     return x
 
 def ELUCons(elu, num_channels):
