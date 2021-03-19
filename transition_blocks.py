@@ -7,6 +7,12 @@ import numpy as np
 def passthrough(x, **kwargs):
     return x
 
+def batchnorm2d(channels):
+    if True:
+        return passthrough;
+    else:
+        return nn.BatchNorm2d;
+
 def ELUCons(elu, num_channels):
     if elu:
         return nn.ELU(inplace=True)
