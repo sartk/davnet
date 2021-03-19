@@ -124,7 +124,7 @@ def logger(timestamp, delim=','):
 
 source_ds = kMRI('valid', balanced=False, group='source')
 target_ds = kMRI('valid', balanced=False, group='target')
-batchnorm2d = identity_tracker if default_configs['batchnrom'] else nn.BatchNorm2d
+batchnorm2d = identity_tracker if default_configs['batchnorm'] else nn.BatchNorm2d
 #per_class_dice = DiceLoss(repr='')
 
 def baseline(N, model, cuda=True, num_classes=4):
