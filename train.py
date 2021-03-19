@@ -23,8 +23,7 @@ losses = {
     'dice': dice_loss_normal,
     'weighted_dice': dice_loss_weighted,
     'nll': nn.NLLLoss(),
-    'per_class': DiceLoss(),
-    'native_per_class': native_per_class
+    'per_class': native_per_class
 }
 
 def train(**kwargs):
